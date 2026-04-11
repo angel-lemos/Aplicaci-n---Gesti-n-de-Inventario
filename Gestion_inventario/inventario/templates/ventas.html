@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Ventas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-receipt"></i> Gestión de Ventas</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'agregar_venta' %}" class="btn btn-success btn-lg">
+                <i class="bi bi-plus-circle"></i> Nueva Venta
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if ventas %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Usuario</th>
+                        <th>Total de Artículos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas %}
+                        <tr>
+                            <td><strong>{{ venta.id }}</strong></td>
+                            <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
+                            <td>{{ venta.cliente.nombre }}</td>
+                            <td>{{ venta.usuario.username }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ venta.detalleventa_set.count }} artículos</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'editar_venta' venta.id %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <a href="{% url 'eliminar_venta' venta.id %}" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <h4 class="alert-heading">Sin ventas registradas</h4>
+            <p>No hay ventas en el sistema. <a href="{% url 'agregar_venta' %}" class="alert-link">Crear una nueva venta</a></p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5 !important;
+    }
+</style>
+{% endblock %}

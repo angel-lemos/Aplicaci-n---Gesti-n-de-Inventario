@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseForbidden
 from django.views.decorators.http import require_http_methods
 from .models import Venta, Producto, Compra
 
@@ -153,3 +152,61 @@ def eliminar_compra(request, id):
         # Redirigir a lista de compras
     context = {'compra': compra}
     return render(request, 'eliminar_compra.html', context)
+
+# ==================== CRUD VENTAS ====================
+
+from .forms import VentaForm
+from django.shortcuts import redirect
+
+#AGREGAR VENTA
+@login_required(login_url='login')
+@permission_required('inventario.add_venta', raise_exception=True)
+@require_http_methods(["GET", "POST"])
+def agregar_venta(request):
+    
+    """Agregar nueva venta. Requiere permiso de creación."""
+    
+    if request.method == 'POST':
+        form = VentaForm(request.POST)
+        if form.is_valid():
+            venta = form.save(commit=False)
+            venta.usuario = request.user 
+            venta.save() 
+            return redirect('ver_ventas')
+    else:
+        form = VentaForm()
+    return render(request, 'agregar_venta.html', {'form': form}) 
+
+#EDITAR VENTA
+@login_required(login_url='login')
+@permission_required('inventario.change_venta', raise_exception=True)
+@require_http_methods(["GET", "POST"])
+def editar_venta(request, id):
+    
+    """Editar venta existente. Requiere permiso de modificación."""
+    
+    venta = get_object_or_404(Venta, id=id)
+    if request.method == 'POST':
+        form = VentaForm(request.POST, instance=venta)
+        if form.is_valid():
+            form.save()
+            return redirect('ver_ventas')
+    else:
+        form = VentaForm(instance=venta)
+    context = {'form': form, 'venta': venta}
+    return render(request, 'editar_venta.html', context)
+
+#ELIMINAR VENTA
+@login_required(login_url='login')
+@permission_required('inventario.delete_venta', raise_exception=True)
+@require_http_methods(["GET", "POST"])
+def eliminar_venta(request, id):
+    
+    """Eliminar venta. Requiere permiso de eliminación."""
+    
+    venta = get_object_or_404(Venta, id=id)
+    if request.method == 'POST':
+        venta.delete()
+        return redirect('ver_ventas')
+    context = {'venta': venta}
+    return render(request, 'eliminar_venta.html', context)
