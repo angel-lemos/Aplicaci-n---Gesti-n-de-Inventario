@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Agregar Venta - Gestión de Inventario{% endblock %}
+{% block title %}Agregar Compra - Gestión de Inventario{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -32,7 +32,7 @@
         <div class="col-md-10 offset-md-1">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar Nueva Venta</h5>
+                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar Nueva Compra</h5>
                 </div>
                 <div class="card-body">
                     <form method="post" novalidate>
@@ -41,10 +41,10 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="{{ form.cliente.id_for_label }}" class="form-label">{{ form.cliente.label }} <span class="text-danger">*</span></label>
-                                    {{ form.cliente }}
-                                    {% if form.cliente.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.cliente.errors }}</div>
+                                    <label for="{{ form.proveedor.id_for_label }}" class="form-label">{{ form.proveedor.label }} <span class="text-danger">*</span></label>
+                                    {{ form.proveedor }}
+                                    {% if form.proveedor.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.proveedor.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -61,7 +61,7 @@
 
                         <hr class="my-4">
                         
-                        <h5 class="mb-3"><i class="bi bi-list-ul"></i> Detalles de la Venta</h5>
+                        <h5 class="mb-3"><i class="bi bi-list-ul"></i> Detalles de la Compra</h5>
                         
                         <div id="formset-container">
                             {{ formset.management_form }}
@@ -84,10 +84,10 @@
                                             {% endif %}
                                         </div>
                                         <div class="col-md-3">
-                                            <label for="{{ form.precio_venta.id_for_label }}" class="form-label">{{ form.precio_venta.label }}</label>
-                                            {{ form.precio_venta }}
-                                            {% if form.precio_venta.errors %}
-                                                <div class="invalid-feedback d-block">{{ form.precio_venta.errors }}</div>
+                                            <label for="{{ form.precio_compra.id_for_label }}" class="form-label">{{ form.precio_compra.label }}</label>
+                                            {{ form.precio_compra }}
+                                            {% if form.precio_compra.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.precio_compra.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-1">
@@ -108,11 +108,11 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'ver_ventas' %}" class="btn btn-secondary">
+                            <a href="{% url 'ver_compras' %}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Guardar Venta
+                                <i class="bi bi-save"></i> Guardar Compra
                             </button>
                         </div>
                     </form>
@@ -121,4 +121,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalForms = document.querySelector('input[name="detallecompra_set-TOTAL_FORMS"]');
+        const maxForms = document.querySelector('input[name="detallecompra_set-MAX_NUM_FORMS"]');
+        const minForms = document.querySelector('input[name="detallecompra_set-MIN_NUM_FORMS"]');
+        
+        console.log('Formset loaded with', totalForms.value, 'forms');
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Productos - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-box"></i> Gestión de Productos</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'agregar_producto' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Producto
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if productos %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Precio (€)</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-center">Mínimo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                        <tr>
+                            <td><strong>{{ producto.codigo }}</strong></td>
+                            <td>{{ producto.nombre_producto }}</td>
+                            <td>{{ producto.descripcion|truncatewords:5 }}</td>
+                            <td class="text-end">{{ producto.precio }}</td>
+                            <td class="text-center">
+                                {% if producto.stock_bajo %}
+                                    <span class="badge bg-danger">{{ producto.stock }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ producto.stock }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{{ producto.stock_minimo }}</td>
+                            <td class="text-center">
+                                {% if producto.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-sm btn-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>No hay productos registrados. <a href="{% url 'agregar_producto' %}" class="alert-link">Agregar uno nuevo</a></p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

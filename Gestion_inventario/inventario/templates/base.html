@@ -19,9 +19,44 @@
                 <span class="text-white">
                     <i class="bi bi-person-circle"></i> {{ user.username }}
                 </span>
-                <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">
-                    <i class="bi bi-box-arrow-right"></i> Salir
-                </a>
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Salir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse show">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Inicio</a></li>
+                    {% if user.is_staff or perms.inventario.view_cliente %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_clientes' %}">Clientes</a></li>
+                    {% endif %}
+                    {% if user.is_staff or perms.inventario.view_proveedor %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_proveedores' %}">Proveedores</a></li>
+                    {% endif %}
+                    {% if user.is_staff or perms.inventario.view_producto %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_productos' %}">Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'consultar_inventario' %}">Inventario</a></li>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_movimientos' %}">Movimientos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_reportes' %}">Reportes</a></li>
+                    {% endif %}
+                    {% if user.is_staff or perms.inventario.view_venta %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_ventas' %}">Ventas</a></li>
+                    {% endif %}
+                    {% if user.is_staff or perms.inventario.view_compra %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_compras' %}">Compras</a></li>
+                    {% endif %}
+                    {% if user.is_authenticated and user.is_staff %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_usuarios' %}">Usuarios</a></li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </nav>
