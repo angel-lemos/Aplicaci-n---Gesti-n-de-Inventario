@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-people-fill"></i> Gestión de Usuarios</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'agregar_usuario' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Usuario
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if usuarios %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.username }}</td>
+                            <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.perfil.telefono }}</td>
+                            <td>{% if usuario.is_superuser %}Super Administrador{% else %}{{ usuario.perfil.get_rol_display }}{% endif %}</td>
+                            <td>{{ usuario.is_active|yesno:"Activo,Inactivo" }}</td>
+                            <td class="text-center">
+                                {% if usuario.is_active %}
+                                    {% if user.is_superuser or usuario.perfil.rol != 'administrador' %}
+                                        <a href="{% url 'eliminar_usuario' usuario.id %}" class="btn btn-sm btn-danger" title="Desactivar">
+                                            <i class="bi bi-person-x"></i>
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    {% if user.is_superuser or usuario.perfil.rol != 'administrador' %}
+                                        <a href="{% url 'activar_usuario' usuario.id %}" class="btn btn-sm btn-success" title="Activar">
+                                            <i class="bi bi-person-check"></i>
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>No hay usuarios registrados. <a href="{% url 'agregar_usuario' %}" class="alert-link">Registrar uno nuevo</a></p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-bar-chart-line"></i> Reportes</h2>
+        </div>
+        <div class="col-md-4">
+            <form method="get" class="row g-2">
+                <div class="col-12">
+                    <select name="tipo" class="form-select">
+                        <option value="inventario" {% if tipo == 'inventario' %}selected{% endif %}>Inventario</option>
+                        <option value="ventas" {% if tipo == 'ventas' %}selected{% endif %}>Ventas</option>
+                        <option value="compras" {% if tipo == 'compras' %}selected{% endif %}>Compras</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <input type="date" name="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-6">
+                    <input type="date" name="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-12 text-end">
+                    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel"></i> Generar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if tipo == 'inventario' %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-primary h-100">
+                    <div class="card-body">
+                        <h6>Total de productos</h6>
+                        <h3>{{ total_productos }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-success h-100">
+                    <div class="card-body">
+                        <h6>Stock total</h6>
+                        <h3>{{ total_stock }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-warning h-100">
+                    <div class="card-body">
+                        <h6>Valor estimado</h6>
+                        <h3>€ {{ valor_inventario|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif tipo == 'ventas' %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-danger h-100">
+                    <div class="card-body">
+                        <h6>Ventas registradas</h6>
+                        <h3>{{ ventas.count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-info h-100">
+                    <div class="card-body">
+                        <h6>Total vendido</h6>
+                        <h3>€ {{ total_ventas|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif tipo == 'compras' %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-secondary h-100">
+                    <div class="card-body">
+                        <h6>Compras registradas</h6>
+                        <h3>{{ compras.count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-success h-100">
+                    <div class="card-body">
+                        <h6>Total compras</h6>
+                        <h3>€ {{ total_compras|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Detalles del reporte</h5>
+            <p class="card-text">Este reporte muestra información actualizada del inventario, ventas o compras según el tipo seleccionado.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
