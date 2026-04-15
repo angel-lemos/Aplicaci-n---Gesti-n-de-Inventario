@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Compras - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-bag-check"></i> Gestión de Compras</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'agregar_compra' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Compra
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if compras %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Proveedor</th>
+                        <th>Usuario</th>
+                        <th>Productos</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end">Total (€)</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compra in compras %}
+                        <tr>
+                            <td><strong>#{{ compra.id }}</strong></td>
+                            <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                            <td>{{ compra.proveedor.nombre_proveedor }}</td>
+                            <td>{{ compra.usuario.username }}</td>
+                            <td>
+                                {% for detalle in compra.detalles.all %}
+                                    {{ detalle.producto.nombre_producto }} (x{{ detalle.cantidad }})
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="text-center">
+                                {% if compra.estado == 'borrador' %}
+                                    <span class="badge bg-secondary">Borrador</span>
+                                {% elif compra.estado == 'confirmada' %}
+                                    <span class="badge bg-info">Confirmada</span>
+                                {% elif compra.estado == 'recibida' %}
+                                    <span class="badge bg-success">Recibida</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ compra.calcular_total }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'editar_compra' compra.id %}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'eliminar_compra' compra.id %}" class="btn btn-sm btn-danger" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <p>No hay compras registradas. <a href="{% url 'agregar_compra' %}" class="alert-link">Registrar una nueva</a></p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

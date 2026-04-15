@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Usuario - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-x"></i> Desactivar Usuario</h4>
+                </div>
+                <div class="card-body">
+                    <p>¿Seguro que desea desactivar al usuario <strong>{{ usuario.username }}</strong>?</p>
+                    <p>Estado actual: <strong>{{ usuario.is_active|yesno:"Activo,Inactivo" }}</strong></p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Confirmar desactivación</button>
+                        <a href="{% url 'ver_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
