@@ -103,7 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
 TIME_ZONE = 'UTC'
 
@@ -116,3 +116,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Sesiones
+# Cierre de sesión tras 30 minutos de inactividad (30 min * 60 seg)
+SESSION_COOKIE_AGE = 1800 
+
+# La sesión caduca al cerrar el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

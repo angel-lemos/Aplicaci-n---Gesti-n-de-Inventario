@@ -191,6 +191,34 @@ class DetalleVentaForm(forms.ModelForm):
             'cantidad': 'Cantidad',
             'precio_venta': 'Precio de Venta (€)',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacer los campos opcionales para permitir filas vacías
+        self.fields['producto'].required = False
+        self.fields['cantidad'].required = False
+        self.fields['precio_venta'].required = False
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        producto = cleaned_data.get('producto')
+        cantidad = cleaned_data.get('cantidad')
+        precio_venta = cleaned_data.get('precio_venta')
+        
+        # Si todos están vacíos, está bien (fila vacía)
+        if not producto and not cantidad and not precio_venta:
+            return cleaned_data
+        
+        # Si algunos están llenos, todos deben estar llenos
+        if producto or cantidad or precio_venta:
+            if not producto:
+                self.add_error('producto', 'El producto es requerido')
+            if not cantidad:
+                self.add_error('cantidad', 'La cantidad es requerida')
+            if not precio_venta:
+                self.add_error('precio_venta', 'El precio es requerido')
+        
+        return cleaned_data
 
 DetalleVentaFormSet = forms.inlineformset_factory(
     Venta, DetalleVenta, form=DetalleVentaForm, extra=1, can_delete=True
@@ -224,6 +252,34 @@ class DetalleCompraForm(forms.ModelForm):
             'cantidad': 'Cantidad',
             'precio_compra': 'Precio de Compra (€)',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacer los campos opcionales para permitir filas vacías
+        self.fields['producto'].required = False
+        self.fields['cantidad'].required = False
+        self.fields['precio_compra'].required = False
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        producto = cleaned_data.get('producto')
+        cantidad = cleaned_data.get('cantidad')
+        precio_compra = cleaned_data.get('precio_compra')
+        
+        # Si todos están vacíos, está bien (fila vacía)
+        if not producto and not cantidad and not precio_compra:
+            return cleaned_data
+        
+        # Si algunos están llenos, todos deben estar llenos
+        if producto or cantidad or precio_compra:
+            if not producto:
+                self.add_error('producto', 'El producto es requerido')
+            if not cantidad:
+                self.add_error('cantidad', 'La cantidad es requerida')
+            if not precio_compra:
+                self.add_error('precio_compra', 'El precio es requerido')
+        
+        return cleaned_data
 
 DetalleCompraFormSet = forms.inlineformset_factory(
     Compra, DetalleCompra, form=DetalleCompraForm, extra=1, can_delete=True

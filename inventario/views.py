@@ -6,10 +6,13 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import F, Sum, Q
 from .models import (Venta, Producto, Compra, Cliente, Proveedor, 
-                     DetalleVenta, DetalleCompra, Perfil)
+
+                    DetalleVenta, DetalleCompra, Perfil)
 from .forms import (VentaForm, CompraForm, ClienteForm, ProveedorForm, 
-                   ProductoForm, DetalleVentaFormSet, DetalleCompraFormSet,
-                   DetalleVentaForm, DetalleCompraForm, UsuarioForm)
+                ProductoForm, DetalleVentaFormSet, DetalleCompraFormSet,
+                DetalleVentaForm, DetalleCompraForm, UsuarioForm)
+from .decorators import roles_permitidos, solo_empleado
+
 
 # ==================== VISTA DE INICIO ====================
 @login_required(login_url='login')
@@ -311,8 +314,9 @@ def eliminar_producto(request, id):
 
 
 # ==================== VISTAS PARA VENTAS ====================
+
 @login_required(login_url='login')
-@administrador_required
+@roles_permitidos('empleado', 'administrador')
 @require_http_methods(["GET"])
 def ver_ventas(request):
     """Ver todas las ventas."""
@@ -322,7 +326,7 @@ def ver_ventas(request):
 
 
 @login_required(login_url='login')
-@administrador_required
+@roles_permitidos('empleado', 'administrador')
 @require_http_methods(["GET", "POST"])
 def agregar_venta(request):
     """Agregar nueva venta con detalles."""
@@ -610,3 +614,271 @@ def ver_reportes(request):
         'compras': compras,
     }
     return render(request, 'reportes.html', contexto)
+
+# ==================== EMPLEADO ====================
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def inventario_empleado(request):
+    """Panel de control para empleados con acceso limitado."""
+    from datetime import date
+    productos_bajo_stock = Producto.objects.filter(stock__lte=F('stock_minimo')).count()
+    total_productos = Producto.objects.count()
+    total_ventas = Venta.objects.count()
+    ventas_hoy = Venta.objects.filter(fecha_venta=date.today()).count()
+    
+    contexto = {
+        'productos_bajo_stock': productos_bajo_stock,
+        'total_productos': total_productos,
+        'total_ventas': total_ventas,
+        'ventas_hoy': ventas_hoy,
+    }
+    return render(request, 'empleado/inventario.html', contexto)
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def productos_empleado(request):
+    """Vista para empleados: ver todos los productos (sin editar ni eliminar)."""
+    query = request.GET.get('q', '').strip()
+    productos = Producto.objects.all()
+    if query:
+        productos = productos.filter(
+            Q(nombre_producto__icontains=query) |
+            Q(codigo__icontains=query) |
+            Q(descripcion__icontains=query)
+        )
+    contexto = {'productos': productos, 'query': query}
+    return render(request, 'empleado/productos.html', contexto)
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def clientes_empleado(request):
+    """Vista para empleados: ver todos los clientes (sin editar ni eliminar)."""
+    query = request.GET.get('q', '').strip()
+    clientes = Cliente.objects.all()
+    if query:
+        clientes = clientes.filter(
+            Q(nombre__icontains=query) |
+            Q(email__icontains=query) |
+            Q(telefono__icontains=query)
+        )
+    contexto = {'clientes': clientes, 'query': query}
+    return render(request, 'empleado/clientes.html', contexto)
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def proveedores_empleado(request):
+    """Vista para empleados: ver todos los proveedores (sin editar ni eliminar)."""
+    query = request.GET.get('q', '').strip()
+    proveedores = Proveedor.objects.all()
+    if query:
+        proveedores = proveedores.filter(
+            Q(nombre_proveedor__icontains=query) |
+            Q(email__icontains=query) |
+            Q(telefono__icontains=query)
+        )
+    contexto = {'proveedores': proveedores, 'query': query}
+    return render(request, 'empleado/proveedores.html', contexto)
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def ventas_empleado(request):
+    """Vista de ventas para empleados: ver todas las ventas."""
+    ventas = Venta.objects.all().order_by('-fecha_venta')
+    contexto = {'ventas': ventas}
+    return render(request, 'empleado/ventas.html', contexto)
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET", "POST"])
+def agregar_venta_empleado(request):
+    """Permite a empleados crear una venta con detalles."""
+    if request.method == 'POST':
+        form = VentaForm(request.POST)
+        formset = DetalleVentaFormSet(request.POST, queryset=DetalleVenta.objects.none())
+        
+        if form.is_valid():
+            # Contar detalles válidos (con producto rellenado)
+            valid_details = []
+            for detail_form in formset:
+                # Si el formulario es válido y tiene producto, es un detalle válido
+                if detail_form.is_valid() and detail_form.cleaned_data.get('producto'):
+                    valid_details.append(detail_form)
+            
+            if valid_details:
+                with transaction.atomic():
+                    venta = form.save(commit=False)
+                    venta.usuario = request.user
+                    venta.save()
+                    
+                    # Guardar detalles y actualizar stock
+                    for detail_form in valid_details:
+                        if not detail_form.cleaned_data.get('DELETE', False):
+                            detalle = detail_form.save(commit=False)
+                            detalle.venta = venta
+                            detalle.save()
+                            
+                            # Actualizar stock del producto
+                            producto = detalle.producto
+                            producto.stock -= detalle.cantidad
+                            producto.save()
+                    
+                    messages.success(request, 'Venta creada exitosamente.')
+                    return redirect('ventas_empleado')
+            else:
+                messages.error(request, 'Debes agregar al menos un artículo a la venta.')
+        else:
+            if form.errors:
+                for field, errors in form.errors.items():
+                    messages.error(request, f'{field}: {errors[0]}')
+    else:
+        form = VentaForm()
+        formset = DetalleVentaFormSet(queryset=DetalleVenta.objects.none())
+    
+    return render(request, 'empleado/agregar_venta.html', {'form': form, 'formset': formset})
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET", "POST"])
+def editar_venta_empleado(request, id):
+    """Permite a empleados editar una venta existente."""
+    venta = get_object_or_404(Venta, id=id)
+    
+    if request.method == 'POST':
+        form = VentaForm(request.POST, instance=venta)
+        formset = DetalleVentaFormSet(request.POST, instance=venta)
+        
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                form.save()
+                
+                # Restaurar stock anterior
+                for detalle in venta.detalles.all():
+                    detalle.producto.stock += detalle.cantidad
+                    detalle.producto.save()
+                
+                # Guardar nuevos detalles y actualizar stock
+                formset.save()
+                for detalle_form in formset:
+                    if detalle_form.cleaned_data and not detalle_form.cleaned_data.get('DELETE', False):
+                        detalle = detalle_form.instance
+                        detalle.producto.stock -= detalle.cantidad
+                        detalle.producto.save()
+                
+                messages.success(request, 'Venta actualizada exitosamente.')
+                return redirect('ventas_empleado')
+    else:
+        form = VentaForm(instance=venta)
+        formset = DetalleVentaFormSet(instance=venta)
+    
+    return render(request, 'empleado/editar_venta.html', {'form': form, 'formset': formset, 'venta': venta})
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def compras_empleado(request):
+    """Vista de compras para empleados: ver todas las compras."""
+    compras = Compra.objects.all().order_by('-fecha_compra')
+    contexto = {'compras': compras}
+    return render(request, 'empleado/compras.html', contexto)
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET", "POST"])
+def agregar_compra_empleado(request):
+    """Permite a empleados crear una compra con detalles."""
+    if request.method == 'POST':
+        form = CompraForm(request.POST)
+        formset = DetalleCompraFormSet(request.POST, queryset=DetalleCompra.objects.none())
+        
+        if form.is_valid():
+            # Contar detalles válidos (con producto rellenado)
+            valid_details = []
+            for detail_form in formset:
+                # Si el formulario es válido y tiene producto, es un detalle válido
+                if detail_form.is_valid() and detail_form.cleaned_data.get('producto'):
+                    valid_details.append(detail_form)
+            
+            if valid_details:
+                with transaction.atomic():
+                    compra = form.save(commit=False)
+                    compra.usuario = request.user
+                    compra.save()
+                    
+                    # Guardar detalles y actualizar stock
+                    for detail_form in valid_details:
+                        if not detail_form.cleaned_data.get('DELETE', False):
+                            detalle = detail_form.save(commit=False)
+                            detalle.compra = compra
+                            detalle.save()
+                            
+                            # Actualizar stock del producto
+                            producto = detalle.producto
+                            producto.stock += detalle.cantidad
+                            producto.save()
+                    
+                    messages.success(request, 'Compra creada exitosamente.')
+                    return redirect('compras_empleado')
+            else:
+                messages.error(request, 'Debes agregar al menos un artículo a la compra.')
+        else:
+            if form.errors:
+                for field, errors in form.errors.items():
+                    messages.error(request, f'{field}: {errors[0]}')
+    else:
+        form = CompraForm()
+        formset = DetalleCompraFormSet(queryset=DetalleCompra.objects.none())
+    
+    return render(request, 'empleado/agregar_compra.html', {'form': form, 'formset': formset})
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET", "POST"])
+def editar_compra_empleado(request, id):
+    """Permite a empleados editar una compra existente."""
+    compra = get_object_or_404(Compra, id=id)
+    
+    if request.method == 'POST':
+        form = CompraForm(request.POST, instance=compra)
+        formset = DetalleCompraFormSet(request.POST, instance=compra)
+        
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                form.save()
+                
+                # Restaurar stock anterior
+                for detalle in compra.detalles.all():
+                    detalle.producto.stock -= detalle.cantidad
+                    detalle.producto.save()
+                
+                # Guardar nuevos detalles y actualizar stock
+                formset.save()
+                for detalle_form in formset:
+                    if detalle_form.cleaned_data and not detalle_form.cleaned_data.get('DELETE', False):
+                        detalle = detalle_form.instance
+                        detalle.producto.stock += detalle.cantidad
+                        detalle.producto.save()
+                
+                messages.success(request, 'Compra actualizada exitosamente.')
+                return redirect('compras_empleado')
+    else:
+        form = CompraForm(instance=compra)
+        formset = DetalleCompraFormSet(instance=compra)
+    
+    return render(request, 'empleado/editar_compra.html', {'form': form, 'formset': formset, 'compra': compra})
+
+@login_required
+@solo_empleado
+@require_http_methods(["GET"])
+def stock_critico(request):
+    """Vista para empleados: ver productos con stock crítico."""
+    productos = Producto.objects.filter(stock__lte=F('stock_minimo'))
+    return render(request, 'empleado/stock_critico.html', {'productos': productos})
+
+# Prueba git
+

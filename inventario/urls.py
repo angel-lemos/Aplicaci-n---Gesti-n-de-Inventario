@@ -44,4 +44,17 @@ urlpatterns = [
     path('compras/agregar/', views.agregar_compra, name='agregar_compra'),
     path('compras/editar/<int:id>/', views.editar_compra, name='editar_compra'),
     path('compras/eliminar/<int:id>/', views.eliminar_compra, name='eliminar_compra'),
+    
+    # EMPLEADO - Vistas limitadas
+    path('empleado/inventario/', views.inventario_empleado, name='inventario_empleado'),
+    path('empleado/productos/', views.productos_empleado, name='productos_empleado'),
+    path('empleado/clientes/', views.clientes_empleado, name='clientes_empleado'),
+    path('empleado/proveedores/', views.proveedores_empleado, name='proveedores_empleado'),
+    path('empleado/ventas/', views.ventas_empleado, name='ventas_empleado'),
+    path('empleado/ventas/agregar/', views.agregar_venta_empleado, name='agregar_venta_empleado'),
+    path('empleado/ventas/editar/<int:id>/', views.editar_venta_empleado, name='editar_venta_empleado'),
+    path('empleado/compras/', views.compras_empleado, name='compras_empleado'),
+    path('empleado/compras/agregar/', views.agregar_compra_empleado, name='agregar_compra_empleado'),
+    path('empleado/compras/editar/<int:id>/', views.editar_compra_empleado, name='editar_compra_empleado'),
+    path('empleado/stock-critico/', views.stock_critico, name='stock_critico'),
 ]
