@@ -876,3 +876,5 @@ def stock_critico(request):
     """Vista para empleados: ver productos con stock crítico."""
     productos = Producto.objects.filter(stock__lte=F('stock_minimo'))
     return render(request, 'empleado/stock_critico.html', {'productos': productos})
+
+# Prueba git
