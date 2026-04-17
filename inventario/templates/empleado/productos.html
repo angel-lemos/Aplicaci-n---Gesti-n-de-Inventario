@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Productos - Empleado{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-box"></i> Catálogo de Productos</h2>
+            <p class="text-muted">Consulta los productos disponibles</p>
+        </div>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form method="get" class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, código o descripción..." value="{{ query }}">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                {% if query %}
+                    <a href="{% url 'productos_empleado' %}" class="btn btn-secondary">
+                        <i class="bi bi-x"></i> Limpiar
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if productos %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Precio (€)</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-center">Mínimo</th>
+                        <th class="text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                        <tr>
+                            <td><strong>{{ producto.codigo }}</strong></td>
+                            <td>{{ producto.nombre_producto }}</td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ producto.descripcion|truncatewords:10 }}
+                                </small>
+                            </td>
+                            <td class="text-end">{{ producto.precio|floatformat:2 }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if producto.stock_bajo %}bg-danger{% else %}bg-success{% endif %}">
+                                    {{ producto.stock }}
+                                </span>
+                            </td>
+                            <td class="text-center">{{ producto.stock_minimo }}</td>
+                            <td class="text-center">
+                                {% if producto.stock <= producto.stock_minimo %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-exclamation-triangle"></i> Bajo
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Normal
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            {% if query %}
+                No se encontraron productos con los criterios de búsqueda.
+            {% else %}
+                No hay productos disponibles.
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'inventario_empleado' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

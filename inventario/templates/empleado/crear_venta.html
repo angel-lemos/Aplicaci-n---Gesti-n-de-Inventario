@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Venta - Empleado{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-form {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-radius: 0.25rem;
+        border-left: 4px solid #28a745;
+    }
+
+    .delete-checkbox {
+        margin-top: 2rem;
+    }
+
+    .btn-add-row {
+        margin-top: 2rem;
+    }
+
+    .producto-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-11 offset-md-1">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bag-check"></i> Crear Nueva Venta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Información de la Venta -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.cliente.id_for_label }}" class="form-label">
+                                        {{ form.cliente.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.cliente }}
+                                    {% if form.cliente.errors %}
+                                        <div class="invalid-feedback d-block text-danger">
+                                            <i class="bi bi-exclamation-circle"></i> {{ form.cliente.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.estado.id_for_label }}" class="form-label">
+                                        {{ form.estado.label }}
+                                    </label>
+                                    {{ form.estado }}
+                                    {% if form.estado.errors %}
+                                        <div class="invalid-feedback d-block text-danger">
+                                            {{ form.estado.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <!-- Detalles de la Venta -->
+                        <h5 class="mb-3">
+                            <i class="bi bi-list-ul"></i> Artículos a Vender
+                        </h5>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Agrega los productos que deseas vender. Puedes eliminar filas desmarcando el checkbox.
+                        </div>
+
+                        <div id="formset-container" class="table-responsive">
+                            {{ formset.management_form }}
+                            
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 35%;">Producto</th>
+                                        <th style="width: 20%;" class="text-center">Cantidad</th>
+                                        <th style="width: 25%;" class="text-end">Precio Unitario</th>
+                                        <th style="width: 15%;" class="text-center">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for form in formset %}
+                                        <tr id="form-{{ forloop.counter0 }}" class="align-middle">
+                                            <td>
+                                                {{ form.producto }}
+                                                {% if form.producto.errors %}
+                                                    <div class="invalid-feedback d-block text-danger">
+                                                        {{ form.producto.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.cantidad }}
+                                                {% if form.cantidad.errors %}
+                                                    <div class="invalid-feedback d-block text-danger">
+                                                        {{ form.cantidad.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ form.precio_venta }}
+                                                {% if form.precio_venta.errors %}
+                                                    <div class="invalid-feedback d-block text-danger">
+                                                        {{ form.precio_venta.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    {{ form.DELETE }}
+                                                </div>
+                                                <small class="text-muted d-block mt-1">
+                                                    Marcar para eliminar
+                                                </small>
+                                            </td>
+                                        </tr>
+                                        {% if form.non_field_errors %}
+                                            <tr>
+                                                <td colspan="4">
+                                                    <div class="alert alert-danger mb-0">
+                                                        {{ form.non_field_errors }}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if formset.non_form_errors %}
+                            <div class="alert alert-danger">
+                                {{ formset.non_form_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Botones de Acción -->
+                        <div class="row mt-4">
+                            <div class="col">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle"></i> Guardar Venta
+                                </button>
+                                <a href="{% url 'ventas_empleado' %}" class="btn btn-secondary btn-lg">
+                                    <i class="bi bi-arrow-left"></i> Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="alert alert-light border">
+                        <h6 class="mb-2"><i class="bi bi-info-circle"></i> Recomendaciones:</h6>
+                        <ul class="mb-0 small">
+                            <li>Verifica que el cliente esté registrado en el sistema</li>
+                            <li>Comprueba que hay suficiente stock del producto</li>
+                            <li>Revisa que los precios sean correctos antes de guardar</li>
+                            <li>Puedes ver el inventario disponible en "Consultar Inventario"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Estilos para los campos del formulario
+    const inputs = document.querySelectorAll('select, input[type="text"], input[type="number"]');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-check-input')) {
+            input.classList.add('form-control');
+        }
+    });
+
+    // Funcionalidad para agregar/eliminar filas dinámicamente (opcional)
+    const deleteCheckboxes = document.querySelectorAll('input[type="checkbox"][name$="-DELETE"]');
+    deleteCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const row = this.closest('tr');
+            if (this.checked) {
+                row.style.opacity = '0.5';
+                row.style.textDecoration = 'line-through';
+            } else {
+                row.style.opacity = '1';
+                row.style.textDecoration = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestión de Inventario{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-box-seam"></i> Gestión de Inventario
+            </span>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white">
+                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                </span>
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="bi bi-box-arrow-right"></i> Salir
+                    </button>
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+    </nav>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse show">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Inicio</a></li>
+                    
+                    <!-- MENÚ PARA ADMINISTRADOR -->
+                    {% if user.is_staff %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_clientes' %}">Clientes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_proveedores' %}">Proveedores</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_productos' %}">Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'consultar_inventario' %}">Inventario</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_movimientos' %}">Movimientos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_reportes' %}">Reportes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_ventas' %}">Ventas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_compras' %}">Compras</a></li>
+                        {% if user.is_superuser %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'ver_usuarios' %}">Usuarios</a></li>
+                        {% endif %}
+                    
+                    <!-- MENÚ PARA EMPLEADO -->
+                    {% elif user.is_authenticated and user.perfil.rol == 'empleado' %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'productos_empleado' %}">Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'clientes_empleado' %}">Clientes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'proveedores_empleado' %}">Proveedores</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ventas_empleado' %}">Ventas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'compras_empleado' %}">Compras</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_critico' %}">Stock Crítico</a></li>
+                    
+                    <!-- MENÚ PARA USUARIO SIN AUTENTICAR -->
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_clientes' %}">Clientes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'ver_proveedores' %}">Proveedores</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        <!-- Mensajes del Sistema -->
+        {% if messages %}
+            <div class="container-fluid mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-info-circle"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>&copy; 2026 Sistema de Gestión de Inventario. Todos los derechos reservados.</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small>Última actualización: {{ now|date:"d/m/Y H:i" }}</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

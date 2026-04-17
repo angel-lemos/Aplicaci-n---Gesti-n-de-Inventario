@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Ventas - Empleado{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-bag-check"></i> Mis Ventas</h2>
+            <p class="text-muted">Registro de ventas registradas</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'agregar_venta_empleado' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Nueva Venta
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if ventas %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th class="text-center">Número de Artículos</th>
+                        <th class="text-end">Total (€)</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas %}
+                        <tr>
+                            <td><strong>#{{ venta.id }}</strong></td>
+                            <td>{{ venta.cliente.nombre_cliente }}</td>
+                            <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">
+                                    {{ venta.detalles.all|length }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <strong>{{ venta.calcular_total|floatformat:2 }}</strong>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Completada
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'editar_venta_empleado' venta.id %}" class="btn btn-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <button type="button" class="btn btn-info" data-bs-toggle="modal" 
+                                        data-bs-target="#detalleVenta{{ venta.id }}">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Modal detalles -->
+                        <div class="modal fade" id="detalleVenta{{ venta.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Venta #{{ venta.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <p><strong>Cliente:</strong> {{ venta.cliente.nombre_cliente }}</p>
+                                                <p><strong>Teléfono:</strong> {{ venta.cliente.telefono }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>Fecha:</strong> {{ venta.fecha_venta|date:"d/m/Y" }}</p>
+                                                <p><strong>Usuario:</strong> {{ venta.usuario.username }}</p>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <h6 class="mb-3">Artículos:</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th class="text-center">Cantidad</th>
+                                                        <th class="text-end">Precio</th>
+                                                        <th class="text-end">Subtotal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for detalle in venta.detalles.all %}
+                                                        <tr>
+                                                            <td>{{ detalle.producto.nombre_producto }}</td>
+                                                            <td class="text-center">{{ detalle.cantidad }}</td>
+                                                            <td class="text-end">{{ detalle.precio_unitario|floatformat:2 }}</td>
+                                                            <td class="text-end">
+                                                                <strong>{{ detalle.subtotal|floatformat:2 }}</strong>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="text-end">
+                                            <h5>Total: <strong class="text-success">{{ venta.calcular_total|floatformat:2 }} €</strong></h5>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Cerrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row mt-3">
+            <div class="col">
+                <p class="text-muted">Total de ventas: <strong>{{ ventas|length }}</strong></p>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> No hay ventas registradas aún.
+        </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col">
+            <a href="{% url 'inventario_empleado' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

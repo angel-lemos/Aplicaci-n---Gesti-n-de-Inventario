@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-5">
+    <!-- Bienvenida -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h1 class="display-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+            <p class="lead text-muted">Bienvenido a tu Sistema de Gestión de Inventario</p>
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row mb-4">
+        <!-- Productos -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-box fs-3 text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Productos</h6>
+                            <h3 class="mb-0">{{ total_productos }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ver_productos' %}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Productos
+                        </a>
+                    {% elif user.perfil.rol == 'empleado' %}
+                        <a href="{% url 'productos_empleado' %}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Productos
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Clientes -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-person-badge fs-3 text-success"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Clientes</h6>
+                            <h3 class="mb-0">{{ total_clientes }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ver_clientes' %}" class="btn btn-sm btn-success w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Clientes
+                        </a>
+                    {% elif user.perfil.rol == 'empleado' %}
+                        <a href="{% url 'clientes_empleado' %}" class="btn btn-sm btn-success w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Clientes
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Proveedores -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-info bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-truck fs-3 text-info"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Proveedores</h6>
+                            <h3 class="mb-0">{{ total_proveedores }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ver_proveedores' %}" class="btn btn-sm btn-info w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Proveedores
+                        </a>
+                    {% elif user.perfil.rol == 'empleado' %}
+                        <a href="{% url 'proveedores_empleado' %}" class="btn btn-sm btn-info w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Proveedores
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Bajo -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-exclamation-triangle fs-3 text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Stock Bajo</h6>
+                            <h3 class="mb-0">{{ productos_bajo_stock }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ver_productos' %}" class="btn btn-sm btn-warning w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Productos
+                        </a>
+                    {% elif user.perfil.rol == 'empleado' %}
+                        <a href="{% url 'stock_critico' %}" class="btn btn-sm btn-warning w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Stock Crítico
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated and user.is_staff %}
+    <!-- Gestión de Usuarios (Solo para Administradores) -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4 mx-auto">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-dark bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-people-fill fs-3 text-dark"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Usuarios</h6>
+                            <h3 class="mb-0">{{ total_usuarios|default:0 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{% url 'ver_usuarios' %}" class="btn btn-sm btn-dark w-100">
+                        <i class="bi bi-arrow-right"></i> Gestionar Usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Transacciones -->
+    <div class="row mb-4">
+        <!-- Ventas -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-danger bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-receipt fs-3 text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Ventas</h6>
+                            <h3 class="mb-0">{{ total_ventas }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ver_ventas' %}" class="btn btn-sm btn-danger w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Ventas
+                        </a>
+                    {% elif user.perfil.rol == 'empleado' %}
+                        <a href="{% url 'ventas_empleado' %}" class="btn btn-sm btn-danger w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Ventas
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Compras -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-secondary bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-bag-check fs-3 text-secondary"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Compras</h6>
+                            <h3 class="mb-0">{{ total_compras }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    {% if user.is_staff %}
+                        <a href="{% url 'ver_compras' %}" class="btn btn-sm btn-secondary w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Compras
+                        </a>
+                    {% elif user.perfil.rol == 'empleado' %}
+                        <a href="{% url 'compras_empleado' %}" class="btn btn-sm btn-secondary w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Compras
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% if user.is_staff %}
+                            <!-- Opciones de Administrador -->
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_producto' %}" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-plus-circle"></i> Nuevo Producto
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_venta' %}" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Venta
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_compra' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Compra
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_cliente' %}" class="btn btn-outline-success w-100">
+                                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'consultar_inventario' %}" class="btn btn-outline-info w-100">
+                                    <i class="bi bi-card-list"></i> Consultar Inventario
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'ver_movimientos' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-repeat"></i> Movimientos
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'ver_reportes' %}" class="btn btn-outline-warning w-100">
+                                    <i class="bi bi-bar-chart-line"></i> Reportes
+                                </a>
+                            </div>
+                        {% elif user.perfil.rol == 'empleado' %}
+                            <!-- Opciones de Empleado -->
+                            <div class="col-md-4">
+                                <a href="{% url 'agregar_venta_empleado' %}" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Venta
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{% url 'agregar_compra_empleado' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Compra
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{% url 'stock_critico' %}" class="btn btn-outline-warning w-100">
+                                    <i class="bi bi-exclamation-triangle"></i> Stock Crítico
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Sistema -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="bi bi-info-circle"></i> <strong>Bienvenido, {{ user.first_name|default:user.username }}!</strong>
+                <p class="mb-0">Este es tu panel de control. Puedes acceder a todos los CRUD desde los botones anteriores o usando la barra de navegación.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .display-4 {
+        font-weight: 300;
+        letter-spacing: -1px;
+    }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .bg-opacity-10 {
+        opacity: 0.1;
+    }
+
+    .rounded-3 {
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
