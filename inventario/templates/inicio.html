@@ -12,6 +12,76 @@
         </div>
     </div>
 
+    <!-- Acciones Rápidas -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% if user.is_staff %}
+                            <!-- Opciones de Administrador -->
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_producto' %}" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-plus-circle"></i> Nuevo Producto
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_venta' %}" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Venta
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_compra' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Compra
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'agregar_cliente' %}" class="btn btn-outline-success w-100">
+                                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'consultar_inventario' %}" class="btn btn-outline-info w-100">
+                                    <i class="bi bi-card-list"></i> Consultar Inventario
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'ver_movimientos' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-repeat"></i> Movimientos
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'ver_reportes' %}" class="btn btn-outline-warning w-100">
+                                    <i class="bi bi-bar-chart-line"></i> Reportes
+                                </a>
+                            </div>
+                        {% elif user.perfil.rol == 'empleado' %}
+                            <!-- Opciones de Empleado -->
+                            <div class="col-md-4">
+                                <a href="{% url 'agregar_venta_empleado' %}" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Venta
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{% url 'agregar_compra_empleado' %}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-plus-circle"></i> Nueva Compra
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{% url 'stock_critico' %}" class="btn btn-outline-warning w-100">
+                                    <i class="bi bi-exclamation-triangle"></i> Stock Crítico
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Estadísticas Principales -->
     <div class="row mb-4">
         <!-- Productos -->
@@ -135,34 +205,6 @@
         </div>
     </div>
 
-    {% if user.is_authenticated and user.is_staff %}
-    <!-- Gestión de Usuarios (Solo para Administradores) -->
-    <div class="row mb-4">
-        <div class="col-md-6 col-lg-4 mx-auto">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-auto">
-                            <div class="bg-dark bg-opacity-10 p-3 rounded-3">
-                                <i class="bi bi-people-fill fs-3 text-dark"></i>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <h6 class="card-title text-muted mb-0">Usuarios</h6>
-                            <h3 class="mb-0">{{ total_usuarios|default:0 }}</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-top-0">
-                    <a href="{% url 'ver_usuarios' %}" class="btn btn-sm btn-dark w-100">
-                        <i class="bi bi-arrow-right"></i> Gestionar Usuarios
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- Transacciones -->
     <div class="row mb-4">
         <!-- Ventas -->
@@ -224,76 +266,32 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Acciones Rápidas -->
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light border-bottom">
-                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Acciones Rápidas</h5>
-                </div>
+        {% if user.is_authenticated and user.is_staff %}
+        <!-- Usuarios (Solo para Administradores) -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <div class="row g-2">
-                        {% if user.is_staff %}
-                            <!-- Opciones de Administrador -->
-                            <div class="col-md-3">
-                                <a href="{% url 'agregar_producto' %}" class="btn btn-outline-primary w-100">
-                                    <i class="bi bi-plus-circle"></i> Nuevo Producto
-                                </a>
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-dark bg-opacity-10 p-3 rounded-3">
+                                <i class="bi bi-people-fill fs-3 text-dark"></i>
                             </div>
-                            <div class="col-md-3">
-                                <a href="{% url 'agregar_venta' %}" class="btn btn-outline-danger w-100">
-                                    <i class="bi bi-plus-circle"></i> Nueva Venta
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{% url 'agregar_compra' %}" class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-plus-circle"></i> Nueva Compra
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{% url 'agregar_cliente' %}" class="btn btn-outline-success w-100">
-                                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{% url 'consultar_inventario' %}" class="btn btn-outline-info w-100">
-                                    <i class="bi bi-card-list"></i> Consultar Inventario
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{% url 'ver_movimientos' %}" class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-repeat"></i> Movimientos
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{% url 'ver_reportes' %}" class="btn btn-outline-warning w-100">
-                                    <i class="bi bi-bar-chart-line"></i> Reportes
-                                </a>
-                            </div>
-                        {% elif user.perfil.rol == 'empleado' %}
-                            <!-- Opciones de Empleado -->
-                            <div class="col-md-4">
-                                <a href="{% url 'agregar_venta_empleado' %}" class="btn btn-outline-danger w-100">
-                                    <i class="bi bi-plus-circle"></i> Nueva Venta
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{% url 'agregar_compra_empleado' %}" class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-plus-circle"></i> Nueva Compra
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <a href="{% url 'stock_critico' %}" class="btn btn-outline-warning w-100">
-                                    <i class="bi bi-exclamation-triangle"></i> Stock Crítico
-                                </a>
-                            </div>
-                        {% endif %}
+                        </div>
+                        <div class="col">
+                            <h6 class="card-title text-muted mb-0">Usuarios</h6>
+                            <h3 class="mb-0">{{ total_usuarios|default:0 }}</h3>
+                        </div>
                     </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{% url 'ver_usuarios' %}" class="btn btn-sm btn-dark w-100">
+                        <i class="bi bi-arrow-right"></i> Gestionar Usuarios
+                    </a>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <!-- Información del Sistema -->
