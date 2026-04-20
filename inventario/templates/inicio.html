@@ -7,8 +7,18 @@
     <!-- Bienvenida -->
     <div class="row mb-5">
         <div class="col-md-12">
-            <h1 class="display-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
-            <p class="lead text-muted">Bienvenido a tu Sistema de Gestión de Inventario</p>
+            <!--<h1 class="display-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>-->
+            <p class="lead text-dark fw-normal">Bienvenido a tu Sistema de Gestión de Inventario</p>
+        </div>
+    </div>
+    <!-- Información del Sistema -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="bi bi-info-circle"></i> <strong>Bienvenido, {{ user.first_name|default:user.username }}!</strong>
+                <p class="mb-0">Este es tu panel de control. Puedes acceder a todos los CRUD desde los botones anteriores o usando la barra de navegación.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         </div>
     </div>
 
@@ -294,16 +304,6 @@
         {% endif %}
     </div>
 
-    <!-- Información del Sistema -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="bi bi-info-circle"></i> <strong>Bienvenido, {{ user.first_name|default:user.username }}!</strong>
-                <p class="mb-0">Este es tu panel de control. Puedes acceder a todos los CRUD desde los botones anteriores o usando la barra de navegación.</p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    </div>
 </div>
 
 <style>

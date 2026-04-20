@@ -5,6 +5,9 @@ urlpatterns = [
     # INICIO
     path('', views.inicio, name='inicio'),
     
+    #LOGOUT
+    path('logout/', views.logout_view, name='logout'),
+    
     # CLIENTES
     path('clientes/', views.ver_clientes, name='ver_clientes'),
     path('clientes/agregar/', views.agregar_cliente, name='agregar_cliente'),

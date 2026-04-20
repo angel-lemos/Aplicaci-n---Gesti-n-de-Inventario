@@ -107,16 +107,28 @@
             <span class="navbar-brand">
                 <i class="bi bi-box-seam"></i> Gestión de Inventario
             </span>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-white">
-                    <i class="bi bi-person-circle"></i> {{ user.username }}
-                </span>
-                <form method="post" action="{% url 'logout' %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> Salir
-                    </button>
-                </form>
+            <div class="dropdown">
+                <button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle"></i>
+                    {{ user.username }}
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="dropdown-item-text">
+                        <strong>{{ user.first_name|default:user.username }}</strong>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" class="px-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                            </button>
+                        </form>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>

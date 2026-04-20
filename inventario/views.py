@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.contrib.auth import logout
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.db import transaction
@@ -34,6 +35,11 @@ def inicio(request):
     contexto['es_administrador'] = request.user.is_superuser or (hasattr(request.user, 'perfil') and request.user.perfil.rol == 'administrador')
     return render(request, 'inicio.html', contexto)
 
+def logout_view(request):
+    """Cerrar sesión del usuario."""
+    logout(request)
+    messages.success(request, 'Has cerrado sesión exitosamente.')
+    return redirect('login')
 
 def administrador_required(view_func):
     """Permite acceso a superusers y administradores."""
