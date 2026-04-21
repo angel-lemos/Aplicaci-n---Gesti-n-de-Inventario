@@ -5,11 +5,16 @@
 {% block content %}
 <div class="container my-5">
     <div class="row mb-4">
-        <div class="col">
+        <div class="col-md-8">
             <h2>
                 <i class="bi bi-exclamation-triangle"></i> Productos con Stock Crítico
             </h2>
             <p class="text-muted">Productos que han llegado o superado el nivel mínimo de stock</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'inicio' %}" class="btn btn-info">
+                <i class="bi bi-house-door"></i> Volver al Inicio
+            </a>
         </div>
     </div>
 
@@ -46,7 +51,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p class="text-muted mb-1">Precio</p>
-                                    <p class="fw-bold">{{ producto.precio|floatformat:2 }} €</p>
+                                    <p class="fw-bold">{{ producto.precio|floatformat:2 }} $</p>
                                 </div>
                             </div>
 
@@ -101,12 +106,12 @@
         </div>
     {% endif %}
 
-    <div class="row mt-4">
+    <!--<div class="row mt-4">
         <div class="col">
-            <a href="{% url 'inventario_empleado' %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Volver
+            <a href="{% url 'inventario_empleado' %}" class="btn btn-info">
+                <i class="bi bi-house-door"></i> Volver al Inicio
             </a>
         </div>
-    </div>
+    </div>-->
 </div>
 {% endblock %}

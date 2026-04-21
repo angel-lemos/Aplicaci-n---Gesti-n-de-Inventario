@@ -34,7 +34,7 @@
                                 {% endif %}
                             </p>
                             <hr>
-                            <p class="mb-0"><strong>Total:</strong> {{ compra.calcular_total }} €</p>
+                            <p class="mb-0"><strong>Total:</strong> {{ compra.calcular_total }} $</p>
                         </div>
                     </div>
 
@@ -53,7 +53,7 @@
                                     <tr>
                                         <td>{{ detalle.producto.nombre_producto }}</td>
                                         <td class="text-center">{{ detalle.cantidad }}</td>
-                                        <td class="text-end">{{ detalle.subtotal }} €</td>
+                                        <td class="text-end">{{ detalle.subtotal }} $</td>
                                     </tr>
                                 {% empty %}
                                     <tr>

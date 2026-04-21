@@ -143,9 +143,9 @@
                 <!-- MENÚ PARA ADMINISTRADOR -->
                 {% if user.is_staff %}
                     <li><a href="{% url 'ver_clientes' %}" class="nav-link"><i class="bi bi-people"></i> Clientes</a></li>
-                    <li><a href="{% url 'ver_proveedores' %}" class="nav-link"><i class="bi bi-building"></i> Proveedores</a></li>
+                    <li><a href="{% url 'ver_proveedores' %}" class="nav-link"><i class="bi bi-truck"></i> Proveedores</a></li>
                     <li><a href="{% url 'ver_productos' %}" class="nav-link"><i class="bi bi-box"></i> Productos</a></li>
-                    <li><a href="{% url 'consultar_inventario' %}" class="nav-link"><i class="bi bi-clipboard-data"></i> Inventario</a></li>
+                    <li><a href="{% url 'consultar_inventario' %}" class="nav-link"><i class="bi bi-card-checklist"></i> Inventario</a></li>
                     <li><a href="{% url 'ver_movimientos' %}" class="nav-link"><i class="bi bi-arrows-move"></i> Movimientos</a></li>
                     <li><a href="{% url 'ver_reportes' %}" class="nav-link"><i class="bi bi-bar-chart"></i> Reportes</a></li>
                     <li><a href="{% url 'ver_ventas' %}" class="nav-link"><i class="bi bi-cart-check"></i> Ventas</a></li>
@@ -158,10 +158,11 @@
                 {% elif user.is_authenticated and user.perfil.rol == 'empleado' %}
                     <li><a href="{% url 'productos_empleado' %}" class="nav-link"><i class="bi bi-box"></i> Productos</a></li>
                     <li><a href="{% url 'clientes_empleado' %}" class="nav-link"><i class="bi bi-people"></i> Clientes</a></li>
-                    <li><a href="{% url 'proveedores_empleado' %}" class="nav-link"><i class="bi bi-building"></i> Proveedores</a></li>
+                    <li><a href="{% url 'proveedores_empleado' %}" class="nav-link"><i class="bi bi-truck"></i> Proveedores</a></li>
                     <li><a href="{% url 'ventas_empleado' %}" class="nav-link"><i class="bi bi-cart-check"></i> Ventas</a></li>
                     <li><a href="{% url 'compras_empleado' %}" class="nav-link"><i class="bi bi-cart-plus"></i> Compras</a></li>
                     <li><a href="{% url 'stock_critico' %}" class="nav-link"><i class="bi bi-exclamation-triangle"></i> Stock Crítico</a></li>
+                    <li><a href="{% url 'inventario_empleado' %}" class="nav-link"><i class="bi bi-card-checklist"></i> Inventario</a></li>
                 
                 <!-- MENÚ PARA USUARIO SIN AUTENTICAR -->
                 {% else %}

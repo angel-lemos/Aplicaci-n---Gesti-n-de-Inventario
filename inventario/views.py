@@ -357,6 +357,9 @@ def agregar_venta(request):
                         producto = detalle.producto
                         producto.stock -= detalle.cantidad
                         producto.save()
+                        
+                        if producto.stock <= 5:
+                            messages.warning(request, f'El producto "{producto.nombre_producto}" está bajo stock (stock actual: {producto.stock}).')
                 
                 messages.success(request, 'Venta agregada exitosamente.')
                 return redirect('ver_ventas')

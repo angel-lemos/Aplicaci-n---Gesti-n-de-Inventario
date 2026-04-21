@@ -13,6 +13,9 @@
             <a href="{% url 'agregar_compra_empleado' %}" class="btn btn-success">
                 <i class="bi bi-plus-circle"></i> Nueva Compra
             </a>
+            <a href="{% url 'inicio' %}" class="btn btn-info ms-2">
+                <i class="bi bi-house-door"></i> Volver al Inicio
+            </a>
         </div>
     </div>
 
@@ -34,7 +37,7 @@
                         <th>Proveedor</th>
                         <th>Fecha</th>
                         <th class="text-center">Número de Artículos</th>
-                        <th class="text-end">Total (€)</th>
+                        <th class="text-end">Total ($)</th>
                         <th class="text-center">Usuario</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -115,13 +118,8 @@
                                             </table>
                                         </div>
                                         <div class="text-end">
-                                            <h5>Total: <strong class="text-success">{{ compra.calcular_total|floatformat:2 }} €</strong></h5>
+                                            <h5>Total: <strong class="text-success">{{ compra.calcular_total|floatformat:2 }} $</strong></h5>
                                         </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                            Cerrar
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -143,8 +141,8 @@
 
     <div class="row mt-4">
         <div class="col">
-            <a href="{% url 'inventario_empleado' %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Volver
+            <a href="{% url 'inventario_empleado' %}" class="btn btn-info">
+                <i class="bi bi-house-door"></i> Volver al Inicio
             </a>
         </div>
     </div>
