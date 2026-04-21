@@ -157,7 +157,7 @@ class ProductoForm(forms.ModelForm):
             'nombre_producto': 'Nombre del Producto',
             'codigo': 'Código',
             'descripcion': 'Descripción',
-            'precio': 'Precio (€)',
+            'precio': 'Precio ($)',
             'stock': 'Stock Actual',
             'stock_minimo': 'Stock Mínimo',
             'activo': 'Producto Activo',
@@ -189,7 +189,7 @@ class DetalleVentaForm(forms.ModelForm):
         labels = {
             'producto': 'Producto',
             'cantidad': 'Cantidad',
-            'precio_venta': 'Precio de Venta (€)',
+            'precio_venta': 'Precio de Venta ($)',
         }
     
     def __init__(self, *args, **kwargs):
@@ -250,7 +250,7 @@ class DetalleCompraForm(forms.ModelForm):
         labels = {
             'producto': 'Producto',
             'cantidad': 'Cantidad',
-            'precio_compra': 'Precio de Compra (€)',
+            'precio_compra': 'Precio de Compra ($)',
         }
     
     def __init__(self, *args, **kwargs):

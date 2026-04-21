@@ -59,7 +59,7 @@
                             </td>
                             <td class="text-end">{{ producto.precio|floatformat:2 }}</td>
                             <td class="text-center">
-                                <span class="badge {% if producto.stock_bajo %}bg-danger{% else %}bg-success{% endif %}">
+                                <span class="badge {% if producto.stock_critico_nivel %}bg-danger{% elif producto.stock <= producto.stock_minimo %}bg-warning text-dark{% else %}bg-success{% endif %}">
                                     {{ producto.stock }}
                                 </span>
                             </td>

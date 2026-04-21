@@ -886,7 +886,9 @@ def editar_compra_empleado(request, id):
 @require_http_methods(["GET"])
 def stock_critico(request):
     """Vista para empleados: ver productos con stock crítico."""
-    productos = Producto.objects.filter(stock__lte=F('stock_minimo'))
+    from django.db.models import Q
+    # Productos con stock crítico: stock <= 5 OR stock <= stock_mínimo
+    productos = Producto.objects.filter(Q(stock__lte=5) | Q(stock__lte=F('stock_minimo')))
     return render(request, 'empleado/stock_critico.html', {'productos': productos})
 
 # Prueba git

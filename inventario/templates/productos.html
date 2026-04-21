@@ -17,16 +17,7 @@
             </a>
         </div>
     </div>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-
+    
     {% if productos %}
         <div class="table-responsive">
             <table class="table table-hover table-striped">
@@ -50,8 +41,10 @@
                             <td>{{ producto.descripcion|truncatewords:5 }}</td>
                             <td class="text-end">{{ producto.precio }}</td>
                             <td class="text-center">
-                                {% if producto.stock_bajo %}
-                                    <span class="badge bg-danger">{{ producto.stock }}</span>
+                                {% if producto.stock_critico_nivel %}
+                                    <span class="badge bg-danger"><i class="bi bi-exclamation-circle"></i> {{ producto.stock }}</span>
+                                {% elif producto.stock_bajo %}
+                                    <span class="badge bg-warning text-dark">{{ producto.stock }}</span>
                                 {% else %}
                                     <span class="badge bg-success">{{ producto.stock }}</span>
                                 {% endif %}

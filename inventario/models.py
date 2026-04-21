@@ -83,6 +83,10 @@ class Producto(models.Model):
 
     def stock_bajo(self):
         return self.stock <= self.stock_minimo
+    
+    def stock_critico_nivel(self):
+        """Retorna True si el stock es crítico (5 o menos)"""
+        return self.stock <= 5
 
 class Compra(models.Model):
     ESTADO_COMPRA = [

@@ -43,7 +43,13 @@
                             <td><strong>{{ producto.nombre_producto }}</strong></td>
                             <td>{{ producto.codigo }}</td>
                             <td>{{ producto.precio }}</td>
-                            <td>{{ producto.stock }}</td>
+                        <td>
+                            {% if producto.stock_critico_nivel %}
+                                <span class="badge bg-danger"><i class="bi bi-exclamation-circle"></i> {{ producto.stock }}</span>
+                            {% else %}
+                                {{ producto.stock }}
+                            {% endif %}
+                        </td>
                             <td>{{ producto.stock_minimo }}</td>
                             <td>{% if producto.activo %}Sí{% else %}No{% endif %}</td>
                             <td class="text-center">

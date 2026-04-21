@@ -10,6 +10,15 @@
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0"><i class="bi bi-box-seam"></i> Detalle de Producto</h4>
                 </div>
+                {% if producto.stock_critico_nivel %}
+                    <div class="alert alert-danger m-3 mb-0">
+                        <i class="bi bi-exclamation-circle"></i> <strong>¡ALERTA!</strong> Este producto tiene stock crítico (≤5 unidades). Se recomienda hacer una compra urgente.
+                    </div>
+                {% elif producto.stock_bajo %}
+                    <div class="alert alert-warning m-3 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Este producto tiene stock bajo.
+                    </div>
+                {% endif %}
                 <div class="card-body">
                     <dl class="row">
                         <dt class="col-sm-4">Nombre</dt>
