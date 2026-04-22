@@ -162,13 +162,15 @@
                     <li><a href="{% url 'ventas_empleado' %}" class="nav-link"><i class="bi bi-cart-check"></i> Ventas</a></li>
                     <li><a href="{% url 'compras_empleado' %}" class="nav-link"><i class="bi bi-cart-plus"></i> Compras</a></li>
                     <li><a href="{% url 'stock_critico' %}" class="nav-link"><i class="bi bi-exclamation-triangle"></i> Stock Crítico</a></li>
-                    <li><a href="{% url 'inventario_empleado' %}" class="nav-link"><i class="bi bi-card-checklist"></i> Inventario</a></li>
+                    <!--<li><a href="{% url 'inventario_empleado' %}" class="nav-link"><i class="bi bi-card-checklist"></i> Inventario</a></li>-->
                 
-                <!-- MENÚ PARA USUARIO SIN AUTENTICAR -->
                 {% else %}
-                    <li><a href="{% url 'ver_clientes' %}" class="nav-link"><i class="bi bi-people"></i> Clientes</a></li>
-                    <li><a href="{% url 'ver_proveedores' %}" class="nav-link"><i class="bi bi-building"></i> Proveedores</a></li>
-                {% endif %}
+                <!-- INVITADO -->
+                <a href="{% url 'inventario_invitado' %}" class="btn btn-outline-light btn-sm">Inventario</a>
+                <a href="{% url 'movimientos_invitado' %}" class="btn btn-outline-light btn-sm">Movimientos</a>
+                <a href="{% url 'reportes_invitado' %}" class="btn btn-outline-light btn-sm">Reportes</a>
+
+            {% endif %}
             </ul>
         </aside>
 

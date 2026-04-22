@@ -34,3 +34,18 @@ def roles_permitidos(*roles):
 
         return wrapper
     return decorator
+
+def solo_invitado(view_func):
+    """Decorador para permitir solo al rol invitado."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+
+        if hasattr(request.user, 'perfil'):
+            if request.user.perfil.rol == 'invitado':
+                return view_func(request, *args, **kwargs)
+
+        raise PermissionDenied
+
+    return wrapper

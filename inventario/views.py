@@ -18,22 +18,34 @@ from .decorators import roles_permitidos, solo_empleado
 # ==================== VISTA DE INICIO ====================
 @login_required(login_url='login')
 def inicio(request):
-    """Vista protegida de inicio. Requiere estar autenticado."""
-    contexto = {
-        'total_productos': Producto.objects.count(),
-        'total_clientes': Cliente.objects.count(),
-        'total_proveedores': Proveedor.objects.count(),
-        'total_ventas': Venta.objects.count(),
-        'total_compras': Compra.objects.count(),
-        'productos_bajo_stock': Producto.objects.filter(stock__lte=F('stock_minimo')).count(),
-    }
-    if request.user.is_staff:
-        if request.user.is_superuser:
-            contexto['total_usuarios'] = User.objects.count()
-        else:
-            contexto['total_usuarios'] = User.objects.filter(is_superuser=False).count()
-    contexto['es_administrador'] = request.user.is_superuser or (hasattr(request.user, 'perfil') and request.user.perfil.rol == 'administrador')
-    return render(request, 'inicio.html', contexto)
+    """Redirige al inicio según el rol del usuario"""
+
+    user = request.user
+
+    # 👑 ADMIN
+    if user.is_superuser or (hasattr(user, 'perfil') and user.perfil.rol == 'administrador'):
+        contexto = {
+            'total_productos': Producto.objects.count(),
+            'total_clientes': Cliente.objects.count(),
+            'total_proveedores': Proveedor.objects.count(),
+            'total_ventas': Venta.objects.count(),
+            'total_compras': Compra.objects.count(),
+            'productos_bajo_stock': Producto.objects.filter(stock__lte=F('stock_minimo')).count(),
+            'total_usuarios': User.objects.count()
+        }
+    
+        return render(request, 'inicio.html', contexto)
+
+    # 👷 EMPLEADO → va directo a inventario
+    elif hasattr(user, 'perfil') and user.perfil.rol == 'empleado':
+        return redirect('inventario_empleado')
+
+    # 👁️ INVITADO
+    elif hasattr(user, 'perfil') and user.perfil.rol == 'invitado':
+        return redirect('inicio_invitado')
+
+    # fallback
+    return redirect('login')
 
 def logout_view(request):
     """Cerrar sesión del usuario."""
@@ -628,21 +640,41 @@ def ver_reportes(request):
 
 @login_required
 @solo_empleado
+def inicio_empleado(request):
+
+    contexto = {
+        'total_productos': Producto.objects.count(),
+        'total_ventas': Venta.objects.count(),
+        'productos_bajo_stock': Producto.objects.filter(
+            stock__lte=F('stock_minimo')
+        ).count(),
+        'ventas_hoy': Venta.objects.filter(
+            fecha_venta=date.today()
+        ).count(),
+    }
+
+    return render(request, 'empleado/inicio.html', contexto)
+
+@login_required
+@solo_empleado
 @require_http_methods(["GET"])
 def inventario_empleado(request):
-    """Panel de control para empleados con acceso limitado."""
-    from datetime import date
-    productos_bajo_stock = Producto.objects.filter(stock__lte=F('stock_minimo')).count()
-    total_productos = Producto.objects.count()
-    total_ventas = Venta.objects.count()
-    ventas_hoy = Venta.objects.filter(fecha_venta=date.today()).count()
-    
+
+    query = request.GET.get('q', '').strip()
+    productos = Producto.objects.all()
+
+    if query:
+        productos = productos.filter(
+            Q(nombre_producto__icontains=query) |
+            Q(codigo__icontains=query) |
+            Q(descripcion__icontains=query)
+        )
+
     contexto = {
-        'productos_bajo_stock': productos_bajo_stock,
-        'total_productos': total_productos,
-        'total_ventas': total_ventas,
-        'ventas_hoy': ventas_hoy,
+        'productos': productos,
+        'query': query,
     }
+
     return render(request, 'empleado/inventario.html', contexto)
 
 @login_required
@@ -890,5 +922,136 @@ def stock_critico(request):
     productos = Producto.objects.filter(stock__lte=F('stock_minimo'))
     return render(request, 'empleado/stock_critico.html', {'productos': productos})
 
-# Prueba git
+
+# ==================== INVITADO ====================
+
+@login_required
+@require_http_methods(["GET"])
+def inicio_invitado(request):
+    """Panel de inicio para usuarios invitados."""
+    # Verificar que sea invitado o permitir acceso general
+    contexto = {
+        'total_productos': Producto.objects.count(),
+        'total_clientes': Cliente.objects.count(),
+        'total_proveedores': Proveedor.objects.count(),
+        'total_ventas': Venta.objects.count(),
+        'total_compras': Compra.objects.count(),
+        'productos_bajo_stock': Producto.objects.filter(stock__lte=F('stock_minimo')).count(),
+    }
+    return render(request, 'invitado/inicio.html', contexto)
+
+
+@login_required
+@require_http_methods(["GET"])
+def inventario_invitado(request):
+    """Consultar inventario (vista para invitados) - solo lectura."""
+    query = request.GET.get('q', '').strip()
+    productos = Producto.objects.filter(activo=True)
+    
+    if query:
+        productos = productos.filter(
+            Q(nombre_producto__icontains=query) |
+            Q(codigo__icontains=query) |
+            Q(descripcion__icontains=query)
+        )
+    
+    contexto = {'productos': productos, 'query': query}
+    return render(request, 'invitado/inventario.html', contexto)
+
+
+@login_required
+@require_http_methods(["GET"])
+def movimientos_invitado(request):
+    """Ver el historial de movimientos de inventario (vista para invitados)."""
+    tipo = request.GET.get('tipo', '')
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+
+    movimientos = []
+    compras = Compra.objects.all()
+    ventas = Venta.objects.all()
+
+    if fecha_inicio:
+        compras = compras.filter(fecha_compra__gte=fecha_inicio)
+        ventas = ventas.filter(fecha_venta__gte=fecha_inicio)
+    if fecha_fin:
+        compras = compras.filter(fecha_compra__lte=fecha_fin)
+        ventas = ventas.filter(fecha_venta__lte=fecha_fin)
+
+    if tipo in ['entrada', '']:
+        for compra in compras:
+            for detalle in compra.detalles.all():
+                movimientos.append({
+                    'fecha': compra.fecha_compra,
+                    'tipo': 'Entrada',
+                    'producto': detalle.producto,
+                    'cantidad': detalle.cantidad,
+                    'usuario': compra.usuario,
+                    'referencia': f'Compra #{compra.id}',
+                    'proveedor': compra.proveedor,
+                })
+    
+    if tipo in ['salida', '']:
+        for venta in ventas:
+            for detalle in venta.detalles.all():
+                movimientos.append({
+                    'fecha': venta.fecha_venta,
+                    'tipo': 'Salida',
+                    'producto': detalle.producto,
+                    'cantidad': detalle.cantidad,
+                    'usuario': venta.usuario,
+                    'referencia': f'Venta #{venta.id}',
+                    'cliente': venta.cliente,
+                })
+
+    movimientos.sort(key=lambda m: m['fecha'], reverse=True)
+    contexto = {
+        'movimientos': movimientos,
+        'tipo': tipo,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+    }
+    return render(request, 'invitado/movimientos.html', contexto)
+
+
+@login_required
+@require_http_methods(["GET"])
+def reportes_invitado(request):
+    """Ver reportes generales del sistema (vista para invitados - solo lectura)."""
+    tipo = request.GET.get('tipo', 'inventario')
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+
+    ventas = Venta.objects.all()
+    compras = Compra.objects.all()
+    productos = Producto.objects.all()
+
+    if fecha_inicio:
+        ventas = ventas.filter(fecha_venta__gte=fecha_inicio)
+        compras = compras.filter(fecha_compra__gte=fecha_inicio)
+    if fecha_fin:
+        ventas = ventas.filter(fecha_venta__lte=fecha_fin)
+        compras = compras.filter(fecha_compra__lte=fecha_fin)
+
+    total_ventas = sum(v.calcular_total() for v in ventas)
+    total_compras = sum(c.calcular_total() for c in compras)
+    total_productos = productos.count()
+    total_stock = productos.aggregate(total_stock=Sum('stock'))['total_stock'] or 0
+    valor_inventario = sum(p.stock * float(p.precio) for p in productos)
+
+    contexto = {
+        'tipo': tipo,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'total_ventas': total_ventas,
+        'total_compras': total_compras,
+        'total_productos': total_productos,
+        'total_stock': total_stock,
+        'valor_inventario': valor_inventario,
+        'ventas': ventas,
+        'compras': compras,
+        'clientes': Cliente.objects.all(),
+        'proveedores': Proveedor.objects.all(),
+    }
+    return render(request, 'invitado/reportes.html', contexto)
 

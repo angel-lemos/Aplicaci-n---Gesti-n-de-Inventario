@@ -52,6 +52,7 @@ urlpatterns = [
     path('stock-critico/', views.stock_critico, name='stock_critico'),
     
     # EMPLEADO - Vistas limitadas
+    path('empleado/', views.inicio_empleado, name='inicio_empleado'),
     path('empleado/inventario/', views.inventario_empleado, name='inventario_empleado'),
     path('empleado/productos/', views.productos_empleado, name='productos_empleado'),
     path('empleado/clientes/', views.clientes_empleado, name='clientes_empleado'),
@@ -63,4 +64,10 @@ urlpatterns = [
     path('empleado/compras/agregar/', views.agregar_compra_empleado, name='agregar_compra_empleado'),
     path('empleado/compras/editar/<int:id>/', views.editar_compra_empleado, name='editar_compra_empleado'),
     path('empleado/stock-critico/', views.stock_critico, name='stock_critico'),
+    
+    # INVITADO - Vistas de solo lectura
+    path('invitado/inicio/', views.inicio_invitado, name='inicio_invitado'),
+    path('invitado/inventario/', views.inventario_invitado, name='inventario_invitado'),
+    path('invitado/movimientos/', views.movimientos_invitado, name='movimientos_invitado'),
+    path('invitado/reportes/', views.reportes_invitado, name='reportes_invitado'),
 ]

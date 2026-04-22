@@ -34,93 +34,62 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for venta in ventas %}
-                        <tr>
-                            <td><strong>#{{ venta.id }}</strong></td>
-                            <td>{{ venta.cliente.nombre_cliente }}</td>
-                            <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
-                            <td class="text-center">
-                                <span class="badge bg-primary">
-                                    {{ venta.detalles.all|length }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <strong>{{ venta.calcular_total|floatformat:2 }}</strong>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Completada
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'editar_venta_empleado' venta.id %}" class="btn btn-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </a>
-                                    <button type="button" class="btn btn-info" data-bs-toggle="modal" 
-                                        data-bs-target="#detalleVenta{{ venta.id }}">
-                                        <i class="bi bi-eye"></i> Ver
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                    <div class="container mt-4">
+    <h3 class="mb-4"><i class="bi bi-receipt"></i> Historial de Ventas</h3>
 
-                        <!-- Modal detalles -->
-                        <div class="modal fade" id="detalleVenta{{ venta.id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Venta #{{ venta.id }}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <p><strong>Cliente:</strong> {{ venta.cliente.nombre_cliente }}</p>
-                                                <p><strong>Teléfono:</strong> {{ venta.cliente.telefono }}</p>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <p><strong>Fecha:</strong> {{ venta.fecha_venta|date:"d/m/Y" }}</p>
-                                                <p><strong>Usuario:</strong> {{ venta.usuario.username }}</p>
-                                            </div>
-                                        </div>
-                                        <hr>
-                                        <h6 class="mb-3">Artículos:</h6>
-                                        <div class="table-responsive">
-                                            <table class="table table-sm">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Producto</th>
-                                                        <th class="text-center">Cantidad</th>
-                                                        <th class="text-end">Precio</th>
-                                                        <th class="text-end">Subtotal</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for detalle in venta.detalles.all %}
-                                                        <tr>
-                                                            <td>{{ detalle.producto.nombre_producto }}</td>
-                                                            <td class="text-center">{{ detalle.cantidad }}</td>
-                                                            <td class="text-end">{{ detalle.precio_unitario|floatformat:2 }}</td>
-                                                            <td class="text-end">
-                                                                <strong>{{ detalle.subtotal|floatformat:2 }}</strong>
-                                                            </td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="text-end">
-                                            <h5>Total: <strong class="text-success">{{ venta.calcular_total|floatformat:2 }} $</strong></h5>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for venta in ventas %}
+                    <tr>
+                        <td>#{{ venta.id }}</td>
+                        <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
+                        <td>{{ venta.cliente }}</td>
+                        <td>${{ venta.calcular_total|floatformat:2 }}</td>
+
+                        <td>
+                            <span class="badge bg-success">
+                                Completada
+                            </span>
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{% url 'editar_venta_empleado' venta.id %}" 
+                            class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <!-- ⚠️ ESTE LINK ESTABA MAL -->
+                            <a href="#" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No hay ventas registradas
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
         <div class="row mt-3">
             <div class="col">
                 <p class="text-muted">Total de ventas: <strong>{{ ventas|length }}</strong></p>

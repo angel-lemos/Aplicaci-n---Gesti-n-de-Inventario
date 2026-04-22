@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <!-- TÍTULO -->
+    <div class="mt-4">
+        <h2 class="fw-bold">📊 Reportes del Sistema</h2>
+        <p class="text-muted">Resumen general de inventario, compras y ventas</p>
+    </div>
+
+    <!-- FILTROS -->
+    <form method="GET" class="row mt-3 mb-4 g-2">
+
+        <div class="col-md-3">
+            <input type="date" name="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+        </div>
+
+        <div class="col-md-3">
+            <input type="date" name="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Filtrar</button>
+        </div>
+
+        <div class="col-md-2">
+            <a href="{% url 'reportes_invitado' %}" class="btn btn-secondary w-100">
+                Limpiar
+            </a>
+        </div>
+
+    </form>
+
+    <!-- KPIs -->
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Ventas Totales</h6>
+                    <h4 class="fw-bold text-success">${{ total_ventas }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Compras Totales</h6>
+                    <h4 class="fw-bold text-danger">${{ total_compras }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Productos</h6>
+                    <h4 class="fw-bold">{{ total_productos }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Stock Total</h6>
+                    <h4 class="fw-bold">{{ total_stock }}</h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SEGUNDA FILA -->
+    <div class="row g-4 mt-1">
+
+        <div class="col-md-6">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">Valor del Inventario</h6>
+                    <h3 class="fw-bold text-primary">${{ valor_inventario }}</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABLAS -->
+    <div class="row mt-5">
+
+        <!-- VENTAS -->
+        <div class="col-md-6">
+            <h5 class="mb-3">🧾 Últimas Ventas</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for venta in ventas|slice:":5" %}
+                        <tr>
+                            <td>#{{ venta.id }}</td>
+                            <td>{{ venta.cliente }}</td>
+                            <td>{{ venta.fecha_venta|date:"d/m/Y" }}</td>
+                            <td>${{ venta.calcular_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Sin datos</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <!-- COMPRAS -->
+        <div class="col-md-6">
+            <h5 class="mb-3">📦 Últimas Compras</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Proveedor</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for compra in compras|slice:":5" %}
+                        <tr>
+                            <td>#{{ compra.id }}</td>
+                            <td>{{ compra.proveedor }}</td>
+                            <td>{{ compra.fecha_compra|date:"d/m/Y" }}</td>
+                            <td>${{ compra.calcular_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Sin datos</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimientos{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <!-- TÍTULO -->
+    <div class="mt-4">
+        <h2 class="fw-bold">🔄 Movimientos de Inventario</h2>
+    </div>
+
+    <!-- FILTROS -->
+    <form method="GET" class="row mt-3 mb-4 g-2">
+
+        <!-- TIPO -->
+        <div class="col-md-2">
+            <select name="tipo" class="form-select">
+                <option value="">Todos</option>
+                <option value="entrada" {% if tipo == 'entrada' %}selected{% endif %}>Entradas</option>
+                <option value="salida" {% if tipo == 'salida' %}selected{% endif %}>Salidas</option>
+            </select>
+        </div>
+
+        <!-- FECHA INICIO -->
+        <div class="col-md-3">
+            <input 
+                type="date" 
+                name="fecha_inicio" 
+                class="form-control"
+                value="{{ fecha_inicio }}"
+            >
+        </div>
+
+        <!-- FECHA FIN -->
+        <div class="col-md-3">
+            <input 
+                type="date" 
+                name="fecha_fin" 
+                class="form-control"
+                value="{{ fecha_fin }}"
+            >
+        </div>
+
+        <!-- BOTONES -->
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Filtrar</button>
+        </div>
+
+        <div class="col-md-2">
+            <a href="{% url 'movimientos_invitado' %}" class="btn btn-secondary w-100">
+                Limpiar
+            </a>
+        </div>
+
+    </form>
+
+    <!-- TABLA -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Referencia</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for mov in movimientos %}
+                <tr>
+
+                    <td>
+                        {{ mov.fecha|date:"d/m/Y" }}
+                    </td>
+
+                    <!-- TIPO con badge -->
+                    <td>
+                        {% if mov.tipo == "Entrada" %}
+                            <span class="badge bg-success">Entrada</span>
+                        {% else %}
+                            <span class="badge bg-danger">Salida</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="fw-semibold">
+                        {{ mov.producto.nombre_producto }}
+                    </td>
+
+                    <td>
+                        {{ mov.cantidad }}
+                    </td>
+
+                    <td>
+                        {{ mov.referencia }}
+                    </td>
+
+                    <td>
+                        {{ mov.usuario }}
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No hay movimientos registrados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

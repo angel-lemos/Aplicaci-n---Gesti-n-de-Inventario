@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio Empleado{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-5">
+
+    <!-- Bienvenida -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <p class="lead text-dark fw-normal">
+                Bienvenido, {{ user.first_name|default:user.username }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="alert alert-info">
+        Este es tu panel de control como empleado.
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row">
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Productos</h6>
+                    <h3>{{ total_productos }}</h3>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'productos_empleado' %}" class="btn btn-primary w-100">
+                        Ver Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Ventas</h6>
+                    <h3>{{ total_ventas }}</h3>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'ventas_empleado' %}" class="btn btn-danger w-100">
+                        Ver Ventas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6>Stock Bajo</h6>
+                    <h3>{{ productos_bajo_stock }}</h3>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'stock_critico' %}" class="btn btn-warning w-100">
+                        Ver Stock
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
