@@ -48,6 +48,9 @@ urlpatterns = [
     path('compras/editar/<int:id>/', views.editar_compra, name='editar_compra'),
     path('compras/eliminar/<int:id>/', views.eliminar_compra, name='eliminar_compra'),
     
+    # STOCK CRÍTICO
+    path('stock-critico/', views.stock_critico, name='stock_critico'),
+    
     # EMPLEADO - Vistas limitadas
     path('empleado/inventario/', views.inventario_empleado, name='inventario_empleado'),
     path('empleado/productos/', views.productos_empleado, name='productos_empleado'),

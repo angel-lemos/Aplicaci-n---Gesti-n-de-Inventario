@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Crítico - Alertas{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>
+                <i class="bi bi-exclamation-triangle"></i> Productos con Stock Crítico
+            </h2>
+            <p class="text-muted">Productos que han llegado o superado el nivel mínimo de stock</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'inicio' %}" class="btn btn-info">
+                <i class="bi bi-house-door"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>
+    
+    {% if productos %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle"></i>
+            <strong>Atención:</strong> Hay {{ productos|length }} producto(s) con stock bajo que requieren atención.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            {% for producto in productos %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card border-danger h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-exclamation-lg"></i> {{ producto.nombre_producto }}
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <p class="text-muted mb-1">Código</p>
+                                    <p class="fw-bold">{{ producto.codigo }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="text-muted mb-1">Precio</p>
+                                    <p class="fw-bold">{{ producto.precio|floatformat:2 }} $</p>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <p class="text-muted small mb-1">Stock Actual</p>
+                                        <h5 class="mb-0">
+                                            <span class="badge bg-danger">{{ producto.stock }}</span>
+                                        </h5>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <p class="text-muted small mb-1">Mínimo</p>
+                                        <h5 class="mb-0">
+                                            <span class="badge bg-secondary">{{ producto.stock_minimo }}</span>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-info-circle"></i> 
+                                Hace falta 
+                                <strong class="text-danger">
+                                    {{ producto.stock_minimo|add:"-"|add:producto.stock }}
+                                </strong>
+                                unidades para alcanzar el stock mínimo.
+                            </p>
+
+                            {% if producto.descripcion %}
+                                <p class="small text-muted">
+                                    <strong>Descripción:</strong> {{ producto.descripcion|truncatewords:10 }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-light">
+                            <a href="{% url 'detalle_producto' producto.id %}" class="btn btn-sm btn-info w-100">
+                                <i class="bi bi-eye"></i> Ver Detalle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <strong>¡Excelente!</strong> Todos los productos mantienen un nivel de stock adecuado.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+
+    <!--<div class="row mt-4">
+        <div class="col">
+            <a href="{% url 'inventario_empleado' %}" class="btn btn-info">
+                <i class="bi bi-house-door"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>-->
+</div>
+{% endblock %}

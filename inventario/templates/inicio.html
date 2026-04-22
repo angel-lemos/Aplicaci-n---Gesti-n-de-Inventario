@@ -202,8 +202,8 @@
                 </div>
                 <div class="card-footer bg-transparent border-top-0">
                     {% if user.is_staff %}
-                        <a href="{% url 'ver_productos' %}" class="btn btn-sm btn-warning w-100">
-                            <i class="bi bi-arrow-right"></i> Ver Productos
+                        <a href="{% url 'stock_critico' %}" class="btn btn-sm btn-warning w-100">
+                            <i class="bi bi-arrow-right"></i> Ver Stock Crítico
                         </a>
                     {% elif user.perfil.rol == 'empleado' %}
                         <a href="{% url 'stock_critico' %}" class="btn btn-sm btn-warning w-100">
