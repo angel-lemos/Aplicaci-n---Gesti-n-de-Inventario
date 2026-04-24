@@ -68,6 +68,10 @@ TEMPLATES = [
     },
 ]
 
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
 WSGI_APPLICATION = 'Gestion_inventario.wsgi.application'
 
 
