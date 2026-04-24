@@ -42,6 +42,15 @@
                             <td>{% if usuario.is_superuser %}Super Administrador{% else %}{{ usuario.perfil.get_rol_display }}{% endif %}</td>
                             <td>{{ usuario.is_active|yesno:"Activo,Inactivo" }}</td>
                             <td class="text-center">
+                                {% if user.is_superuser and not usuario.is_superuser %}
+                                    <a href="{% url 'cambiar_contrasena_usuario' usuario.id %}" class="btn btn-sm btn-warning me-1" title="Cambiar contraseña">
+                                        <i class="bi bi-key-fill"></i>
+                                    </a>
+                                {% elif not user.is_superuser and usuario.perfil.rol != 'administrador' %}
+                                    <a href="{% url 'cambiar_contrasena_usuario' usuario.id %}" class="btn btn-sm btn-warning me-1" title="Cambiar contraseña">
+                                        <i class="bi bi-key-fill"></i>
+                                    </a>
+                                {% endif %}
                                 {% if usuario.is_active %}
                                     {% if user.is_superuser or usuario.perfil.rol != 'administrador' %}
                                         <a href="{% url 'eliminar_usuario' usuario.id %}" class="btn btn-sm btn-danger" title="Desactivar">

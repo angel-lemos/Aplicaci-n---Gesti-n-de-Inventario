@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.contrib.auth import logout
+from django.contrib.auth import logout, update_session_auth_hash
+from .forms import CustomPasswordChangeForm, AdminPasswordChangeForm
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.db import transaction
@@ -53,6 +54,26 @@ def logout_view(request):
     messages.success(request, 'Has cerrado sesión exitosamente.')
     return redirect('login')
 
+@login_required(login_url='login')
+@require_http_methods(["GET", "POST"])
+def cambiar_contrasena(request):
+    """Permite al usuario autenticado cambiar su contraseña."""
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data.get('new_password1')
+            request.user.set_password(new_password)
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Contraseña actualizada correctamente.')
+            return redirect('inicio')
+        else:
+            messages.error(request, 'No se pudo cambiar la contraseña. Revisa los errores del formulario.')
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    return render(request, 'cambiar_contrasena.html', {'form': form})
+
+
 def administrador_required(view_func):
     """Permite acceso a superusers y administradores."""
     return user_passes_test(
@@ -66,6 +87,20 @@ def administrador_required(view_func):
 
 
 # ==================== VISTAS PARA USUARIOS ====================
+def puede_cambiar_contrasena_usuario(actual, objetivo):
+    if not actual.is_authenticated or actual == objetivo:
+        return False
+    if actual.is_superuser:
+        return not objetivo.is_superuser
+    if hasattr(actual, 'perfil') and actual.perfil.rol == 'administrador':
+        if objetivo.is_superuser:
+            return False
+        if hasattr(objetivo, 'perfil') and objetivo.perfil.rol == 'administrador':
+            return False
+        return True
+    return False
+
+
 @login_required(login_url='login')
 @administrador_required
 @require_http_methods(["GET"])
@@ -133,6 +168,29 @@ def activar_usuario(request, id):
         messages.success(request, 'Usuario activado exitosamente.')
         return redirect('ver_usuarios')
     return render(request, 'activar_usuario.html', {'usuario': usuario})
+
+
+@login_required(login_url='login')
+@administrador_required
+@require_http_methods(["GET", "POST"])
+def cambiar_contrasena_usuario(request, id):
+    usuario = get_object_or_404(User, id=id)
+    if not puede_cambiar_contrasena_usuario(request.user, usuario):
+        messages.error(request, 'No tienes permisos para cambiar la contraseña de este usuario.')
+        return redirect('ver_usuarios')
+
+    if request.method == 'POST':
+        form = AdminPasswordChangeForm(usuario, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Contraseña de {usuario.username} actualizada correctamente.')
+            return redirect('ver_usuarios')
+        else:
+            messages.error(request, 'No se pudo cambiar la contraseña. Revisa los errores del formulario.')
+    else:
+        form = AdminPasswordChangeForm(usuario)
+
+    return render(request, 'cambiar_contrasena_usuario.html', {'form': form, 'usuario': usuario})
 
 
 # ==================== VISTAS PARA CLIENTES ====================

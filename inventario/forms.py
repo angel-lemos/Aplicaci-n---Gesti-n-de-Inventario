@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 from .models import Venta, Producto, Compra, Cliente, Proveedor, DetalleVenta, DetalleCompra, Perfil
 
 class LoginForm(AuthenticationForm):
@@ -10,6 +11,40 @@ class LoginForm(AuthenticationForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'})
     )
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    error_messages = {
+        'password_incorrect': _('La contraseña actual no es correcta.'),
+        'password_mismatch': _('Las contraseñas nuevas no coinciden.'),
+        'password_same_as_old_password': _('La nueva contraseña debe ser diferente a la anterior.'),
+    }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        old_password = cleaned_data.get('old_password')
+        new_password1 = cleaned_data.get('new_password1')
+        new_password2 = cleaned_data.get('new_password2')
+
+        if old_password and new_password1 and old_password == new_password1:
+            self.add_error('new_password1', self.error_messages['password_same_as_old_password'])
+
+        if old_password and new_password2 and old_password == new_password2:
+            self.add_error('new_password2', self.error_messages['password_same_as_old_password'])
+
+        return cleaned_data
+
+
+class AdminPasswordChangeForm(SetPasswordForm):
+    error_messages = {
+        'password_mismatch': _('Las contraseñas no coinciden.'),
+        'password_same_as_old_password': _('La nueva contraseña debe ser diferente a la anterior.'),
+    }
+
+    def clean_new_password1(self):
+        password1 = self.cleaned_data.get('new_password1')
+        if password1 and self.user.check_password(password1):
+            raise forms.ValidationError(self.error_messages['password_same_as_old_password'])
+        return password1
 
 # ====================== FORMULARIOS PARA CLIENTES ======================
 class ClienteForm(forms.ModelForm):

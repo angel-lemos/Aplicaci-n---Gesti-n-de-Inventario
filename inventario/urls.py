@@ -7,6 +7,7 @@ urlpatterns = [
     
     #LOGOUT
     path('logout/', views.logout_view, name='logout'),
+    path('password-change/', views.cambiar_contrasena, name='cambiar_contrasena'),
     
     # CLIENTES
     path('clientes/', views.ver_clientes, name='ver_clientes'),
@@ -17,6 +18,7 @@ urlpatterns = [
     # USUARIOS
     path('usuarios/', views.ver_usuarios, name='ver_usuarios'),
     path('usuarios/agregar/', views.agregar_usuario, name='agregar_usuario'),
+    path('usuarios/<int:id>/cambiar-contrasena/', views.cambiar_contrasena_usuario, name='cambiar_contrasena_usuario'),
     path('usuarios/activar/<int:id>/', views.activar_usuario, name='activar_usuario'),
     path('usuarios/eliminar/<int:id>/', views.eliminar_usuario, name='eliminar_usuario'),
     
