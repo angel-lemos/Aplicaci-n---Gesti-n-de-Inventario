@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { text-align: center; }
+        .resumen { margin-bottom: 20px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .bajo-stock {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📦 Reporte de Inventario</h1>
+
+<p><strong>Fecha:</strong> {{ fecha }}</p>
+<p><strong>Usuario:</strong> {{ usuario.username }}</p>
+
+<div class="resumen">
+    <p>Total de productos: {{ total_productos }}</p>
+    <p>Productos con bajo stock: {{ bajo_stock.count }}</p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Stock</th>
+            <th>Precio</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.stock }}</td>
+            <td>${{ producto.precio }}</td>
+            <td>
+                {% if producto.stock < 10 %}
+                    <span class="bajo-stock">Bajo stock</span>
+                {% else %}
+                    OK
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

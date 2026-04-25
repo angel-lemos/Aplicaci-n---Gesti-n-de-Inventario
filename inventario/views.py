@@ -1,19 +1,27 @@
+from functools import wraps
+import json
+from datetime import date, datetime
+
+from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.contrib.auth import logout, update_session_auth_hash
+from django.contrib.auth import logout, update_session_auth_hash, login
 from .forms import CustomPasswordChangeForm, AdminPasswordChangeForm
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import F, Sum, Q
+from django.db.models.deletion import ProtectedError
+from django.core.exceptions import PermissionDenied
 from .models import (Venta, Producto, Compra, Cliente, Proveedor, 
 
-                    DetalleVenta, DetalleCompra, Perfil)
+                    DetalleVenta, DetalleCompra, Perfil, Reporte)
 from .forms import (VentaForm, CompraForm, ClienteForm, ProveedorForm, 
                 ProductoForm, DetalleVentaFormSet, DetalleCompraFormSet,
                 DetalleVentaForm, DetalleCompraForm, UsuarioForm)
 from .decorators import roles_permitidos, solo_empleado
+from datetime import date
 
 
 # ==================== VISTA DE INICIO ====================
@@ -48,6 +56,21 @@ def inicio(request):
     # fallback
     return redirect('login')
 
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('inicio')
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos')
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'login.html', {'form': form})
+
 def logout_view(request):
     """Cerrar sesión del usuario."""
     logout(request)
@@ -75,16 +98,23 @@ def cambiar_contrasena(request):
 
 
 def administrador_required(view_func):
-    """Permite acceso a superusers y administradores."""
-    return user_passes_test(
-        lambda u: u.is_authenticated and (
-            u.is_superuser or 
-            (hasattr(u, 'perfil') and u.perfil.rol == 'administrador')
-        ),
-        login_url='login',
-        redirect_field_name=None
-    )(view_func)
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
 
+        u = request.user
+
+        if not u.is_authenticated:
+            return redirect('login')
+
+        if u.is_superuser:
+            return view_func(request, *args, **kwargs)
+
+        if hasattr(u, 'perfil') and u.perfil.rol == 'administrador':
+            return view_func(request, *args, **kwargs)
+
+        raise PermissionDenied
+
+    return wrapper
 
 # ==================== VISTAS PARA USUARIOS ====================
 def puede_cambiar_contrasena_usuario(actual, objetivo):
@@ -322,9 +352,9 @@ def ver_productos(request):
 @administrador_required
 @require_http_methods(["GET"])
 def ver_inventario(request):
-    """Consultar inventario con búsqueda y detalle."""
+    """Consultar inventario con búsqueda y detalle (solo productos activos)."""
     query = request.GET.get('q', '').strip()
-    productos = Producto.objects.all()
+    productos = Producto.objects.filter(activo=True)
     if query:
         productos = productos.filter(
             Q(nombre_producto__icontains=query) |
@@ -380,13 +410,43 @@ def editar_producto(request, id):
 @administrador_required
 @require_http_methods(["GET", "POST"])
 def eliminar_producto(request, id):
-    """Eliminar producto."""
+    """Eliminar producto: baja lógica si fue comprado/vendido, baja física si no."""
     producto = get_object_or_404(Producto, id=id)
+    
+    # Verificar si el producto fue comprado o vendido
+    fue_comprado = producto.detalles_compra.exists()
+    fue_vendido = producto.detalles_venta.exists()
+    tiene_transacciones = fue_comprado or fue_vendido
+    
     if request.method == 'POST':
-        producto.delete()
-        messages.success(request, 'Producto eliminado exitosamente.')
+        if tiene_transacciones:
+            # Baja lógica: marcar como inactivo
+            producto.activo = False
+            producto.save()
+            messages.success(
+                request, 
+                f'Producto "{producto.nombre_producto}" dado de baja (no se puede eliminar porque tiene transacciones).'
+            )
+        else:
+            # Baja física: eliminar completamente
+            nombre = producto.nombre_producto
+            try:
+                producto.delete()
+                messages.success(request, f'Producto "{nombre}" eliminado exitosamente.')
+            except ProtectedError:
+                messages.error(request, 'No se puede eliminar este producto por restricciones de integridad.')
+                return render(request, 'eliminar_producto.html', {'producto': producto, 'tiene_transacciones': tiene_transacciones})
+        
         return redirect('ver_productos')
-    return render(request, 'eliminar_producto.html', {'producto': producto})
+    
+    contexto = {
+        'producto': producto,
+        'tiene_transacciones': tiene_transacciones,
+        'fue_comprado': fue_comprado,
+        'fue_vendido': fue_vendido,
+        'accion': 'Baja Lógica' if tiene_transacciones else 'Eliminación'
+    }
+    return render(request, 'eliminar_producto.html', contexto)
 
 
 # ==================== VISTAS PARA VENTAS ====================
@@ -658,14 +718,15 @@ def ver_movimientos(request):
 @administrador_required
 @require_http_methods(["GET"])
 def ver_reportes(request):
-    """Ver reportes generales del sistema."""
+    """Ver reportes generales del sistema con guardado en BD."""
     tipo = request.GET.get('tipo', 'inventario')
     fecha_inicio = request.GET.get('fecha_inicio', '')
     fecha_fin = request.GET.get('fecha_fin', '')
+    guardar = request.GET.get('guardar', 'false').lower() == 'true'
 
     ventas = Venta.objects.all()
     compras = Compra.objects.all()
-    productos = Producto.objects.all()
+    productos = Producto.objects.filter(activo=True)
 
     if fecha_inicio:
         ventas = ventas.filter(fecha_venta__gte=fecha_inicio)
@@ -680,6 +741,14 @@ def ver_reportes(request):
     total_stock = productos.aggregate(total_stock=Sum('stock'))['total_stock'] or 0
     valor_inventario = sum(p.stock * float(p.precio) for p in productos)
 
+    # Generar título del reporte
+    titulo_tipos = {
+        'inventario': 'Reporte de Inventario',
+        'ventas': 'Reporte de Ventas',
+        'compras': 'Reporte de Compras'
+    }
+    titulo = f"{titulo_tipos.get(tipo, 'Reporte')} - {date.today().strftime('%d/%m/%Y')}"
+    
     contexto = {
         'tipo': tipo,
         'fecha_inicio': fecha_inicio,
@@ -691,7 +760,43 @@ def ver_reportes(request):
         'valor_inventario': valor_inventario,
         'ventas': ventas,
         'compras': compras,
+        'productos': productos,
+        'titulo': titulo,
+        'usuario': request.user.username,
+        'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M'),
     }
+    
+    # Guardar reporte en BD si se solicita
+    if guardar:
+        contenido_json = {
+            'tipo': tipo,
+            'total_ventas': float(total_ventas),
+            'total_compras': float(total_compras),
+            'total_productos': total_productos,
+            'total_stock': total_stock,
+            'valor_inventario': float(valor_inventario),
+        }
+        
+        fecha_inicio_obj = None
+        fecha_fin_obj = None
+        try:
+            if fecha_inicio:
+                fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            if fecha_fin:
+                fecha_fin_obj = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+        
+        Reporte.objects.create(
+            titulo=titulo,
+            tipo=tipo,
+            usuario=request.user,
+            fecha_inicio=fecha_inicio_obj,
+            fecha_fin=fecha_fin_obj,
+            contenido_json=contenido_json
+        )
+        messages.success(request, 'Reporte guardado exitosamente.')
+    
     return render(request, 'reportes.html', contexto)
 
 # ==================== EMPLEADO ====================
@@ -719,7 +824,7 @@ def inicio_empleado(request):
 def inventario_empleado(request):
 
     query = request.GET.get('q', '').strip()
-    productos = Producto.objects.all()
+    productos = Producto.objects.filter(activo=True)
 
     if query:
         productos = productos.filter(
@@ -739,9 +844,9 @@ def inventario_empleado(request):
 @solo_empleado
 @require_http_methods(["GET"])
 def productos_empleado(request):
-    """Vista para empleados: ver todos los productos (sin editar ni eliminar)."""
+    """Vista para empleados: ver todos los productos activos (sin editar ni eliminar)."""
     query = request.GET.get('q', '').strip()
-    productos = Producto.objects.all()
+    productos = Producto.objects.filter(activo=True)
     if query:
         productos = productos.filter(
             Q(nombre_producto__icontains=query) |
@@ -1082,7 +1187,7 @@ def reportes_invitado(request):
 
     ventas = Venta.objects.all()
     compras = Compra.objects.all()
-    productos = Producto.objects.all()
+    productos = Producto.objects.filter(activo=True)
 
     if fecha_inicio:
         ventas = ventas.filter(fecha_venta__gte=fecha_inicio)
@@ -1097,6 +1202,14 @@ def reportes_invitado(request):
     total_stock = productos.aggregate(total_stock=Sum('stock'))['total_stock'] or 0
     valor_inventario = sum(p.stock * float(p.precio) for p in productos)
 
+    # Generar título del reporte
+    titulo_tipos = {
+        'inventario': 'Reporte de Inventario',
+        'ventas': 'Reporte de Ventas',
+        'compras': 'Reporte de Compras'
+    }
+    titulo = f"{titulo_tipos.get(tipo, 'Reporte')} - {date.today().strftime('%d/%m/%Y')}"
+
     contexto = {
         'tipo': tipo,
         'fecha_inicio': fecha_inicio,
@@ -1110,6 +1223,73 @@ def reportes_invitado(request):
         'compras': compras,
         'clientes': Cliente.objects.all(),
         'proveedores': Proveedor.objects.all(),
+        'titulo': titulo,
+        'usuario': request.user.username,
+        'fecha_generacion': datetime.now().strftime('%d/%m/%Y %H:%M'),
     }
     return render(request, 'invitado/reportes.html', contexto)
 
+
+# ==================== Generar PDF ====================
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
+
+from .models import Producto
+
+
+@login_required
+def reporte_inventario_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_inventario.pdf"'
+
+    p = canvas.Canvas(response, pagesize=letter)
+
+    # Título
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(200, 750, "Reporte de Inventario")
+
+    # Info general
+    p.setFont("Helvetica", 10)
+    p.drawString(50, 720, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    p.drawString(50, 705, f"Usuario: {request.user.username}")
+
+    productos = Producto.objects.all()
+
+    # Resumen
+    total_productos = productos.count()
+    total_stock = sum(p.stock for p in productos)
+
+    p.drawString(50, 680, f"Total productos: {total_productos}")
+    p.drawString(50, 665, f"Total stock: {total_stock}")
+
+    # Tabla
+    y = 630
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(50, y, "Nombre")
+    p.drawString(200, y, "Stock")
+    p.drawString(260, y, "Precio")
+    p.drawString(330, y, "Estado")
+
+    y -= 20
+    p.setFont("Helvetica", 10)
+
+    for producto in productos:
+        estado = "Bajo stock" if producto.stock < 10 else "OK"
+
+        p.drawString(50, y, producto.nombre_producto)
+        p.drawString(200, y, str(producto.stock))
+        p.drawString(260, y, f"${producto.precio}")
+        p.drawString(330, y, estado)
+
+        y -= 20
+
+        # Nueva página si se llena
+        if y < 50:
+            p.showPage()
+            y = 750
+
+    p.save()
+    return response

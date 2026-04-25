@@ -116,7 +116,7 @@ class Compra(models.Model):
 
 class DetalleCompra(models.Model):
     compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='detalles_compra')
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, related_name='detalles_compra')
     cantidad = models.PositiveIntegerField()
     precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -158,7 +158,7 @@ class Venta(models.Model):
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='detalles_venta')
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, related_name='detalles_venta')
     cantidad = models.PositiveIntegerField()
     precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -176,3 +176,26 @@ class DetalleVenta(models.Model):
     def clean(self):
         if self.cantidad > self.producto.stock:
             raise ValidationError(f"No hay suficiente stock. Disponible: {self.producto.stock}")
+
+class Reporte(models.Model):
+    TIPOS_REPORTE = [
+        ('inventario', 'Reporte de Inventario'),
+        ('ventas', 'Reporte de Ventas'),
+        ('compras', 'Reporte de Compras'),
+    ]
+    
+    titulo = models.CharField(max_length=200)
+    tipo = models.CharField(max_length=20, choices=TIPOS_REPORTE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reportes_generados')
+    fecha_generacion = models.DateTimeField(auto_now_add=True)
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
+    contenido_json = models.JSONField(default=dict)
+    
+    class Meta:
+        ordering = ['-fecha_generacion']
+        verbose_name = 'Reporte'
+        verbose_name_plural = 'Reportes'
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.usuario.username} ({self.fecha_generacion.strftime('%d/%m/%Y')})"

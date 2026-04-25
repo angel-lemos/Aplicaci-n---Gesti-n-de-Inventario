@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'inventario',
     'widget_tweaks',
+    'reportlab',
 ]
 
 MIDDLEWARE = [

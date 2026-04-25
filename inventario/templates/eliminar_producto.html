@@ -1,27 +1,55 @@
 {% extends 'base.html' %}
 
-{% block title %}Eliminar Producto - Gestión de Inventario{% endblock %}
+{% block title %}{% if tiene_transacciones %}Dar de Baja{% else %}Eliminar{% endif %} Producto - Gestión de Inventario{% endblock %}
 
 {% block content %}
 <div class="container my-5">
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <div class="card border-danger shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Eliminar Producto</h5>
+            <div class="card {% if tiene_transacciones %}border-warning{% else %}border-danger{% endif %} shadow-sm">
+                <div class="card-header {% if tiene_transacciones %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                    <h5 class="mb-0">
+                        <i class="bi {% if tiene_transacciones %}bi-exclamation-circle{% else %}bi-exclamation-triangle{% endif %}"></i> 
+                        {% if tiene_transacciones %}Dar de Baja Producto{% else %}Eliminar Producto{% endif %}
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-warning mb-4">
-                        <strong>¿Está seguro de que desea eliminar este producto?</strong>
-                        <p class="mb-0 mt-2">Esta acción no se puede deshacer.</p>
-                    </div>
+                    {% if tiene_transacciones %}
+                        <div class="alert alert-warning mb-4">
+                            <strong><i class="bi bi-info-circle"></i> Baja Lógica</strong>
+                            <p class="mb-0 mt-2">Este producto fue comprado o vendido. Se marcará como inactivo pero conservará el historial de transacciones.</p>
+                        </div>
+                        
+                        {% if fue_comprado %}
+                            <div class="alert alert-info alert-sm mb-2">
+                                <small><i class="bi bi-cart-check"></i> Este producto fue incluido en <strong>compras</strong></small>
+                            </div>
+                        {% endif %}
+                        
+                        {% if fue_vendido %}
+                            <div class="alert alert-info alert-sm mb-3">
+                                <small><i class="bi bi-receipt"></i> Este producto fue incluido en <strong>ventas</strong></small>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-danger mb-4">
+                            <strong><i class="bi bi-trash"></i> Eliminación Física</strong>
+                            <p class="mb-0 mt-2">Este producto será eliminado completamente de la base de datos. Esta acción no se puede deshacer.</p>
+                        </div>
+                    {% endif %}
 
-                    <div class="card bg-light">
+                    <div class="card bg-light mb-4">
                         <div class="card-body">
                             <p><strong>Nombre:</strong> {{ producto.nombre_producto }}</p>
                             <p><strong>Código:</strong> {{ producto.codigo }}</p>
                             <p><strong>Stock Actual:</strong> {{ producto.stock }}</p>
-                            <p class="mb-0"><strong>Precio:</strong> {{ producto.precio }} $</p>
+                            <p><strong>Precio:</strong> {{ producto.precio }} $</p>
+                            <p class="mb-0">
+                                <strong>Estado:</strong> 
+                                <span class="badge {% if producto.activo %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if producto.activo %}Activo{% else %}Inactivo{% endif %}
+                                </span>
+                            </p>
                         </div>
                     </div>
 
@@ -31,8 +59,9 @@
                             <a href="{% url 'ver_productos' %}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-trash"></i> Eliminar
+                            <button type="submit" class="btn {% if tiene_transacciones %}btn-warning{% else %}btn-danger{% endif %}">
+                                <i class="bi {% if tiene_transacciones %}bi-lock{% else %}bi-trash{% endif %}"></i> 
+                                {% if tiene_transacciones %}Dar de Baja{% else %}Eliminar{% endif %}
                             </button>
                         </div>
                     </form>
@@ -42,3 +71,4 @@
     </div>
 </div>
 {% endblock %}
+

@@ -72,4 +72,7 @@ urlpatterns = [
     path('invitado/inventario/', views.inventario_invitado, name='inventario_invitado'),
     path('invitado/movimientos/', views.movimientos_invitado, name='movimientos_invitado'),
     path('invitado/reportes/', views.reportes_invitado, name='reportes_invitado'),
+    
+    # GENERAR PDF
+    path('reporte/pdf/', views.reporte_inventario_pdf, name='reporte_pdf'),
 ]

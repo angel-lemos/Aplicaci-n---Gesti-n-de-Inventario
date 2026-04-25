@@ -10,11 +10,12 @@ def solo_empleado(view_func):
         if not request.user.is_authenticated:
             return redirect('login')
 
-        if hasattr(request.user, 'perfil'):
-            if request.user.perfil.rol in ['empleado', 'administrador']:
-                return view_func(request, *args, **kwargs)
+        perfil = getattr(request.user, 'perfil', None)
 
-        raise PermissionDenied 
+        if perfil and perfil.rol in ['empleado', 'administrador']:
+            return view_func(request, *args, **kwargs)
+
+        raise PermissionDenied
 
     return wrapper
 
