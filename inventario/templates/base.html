@@ -172,9 +172,9 @@
                 
                 {% else %}
                 <!-- INVITADO -->
-                <a href="{% url 'inventario_invitado' %}" class="btn btn-outline-light btn-sm">Inventario</a>
-                <a href="{% url 'movimientos_invitado' %}" class="btn btn-outline-light btn-sm">Movimientos</a>
-                <a href="{% url 'reportes_invitado' %}" class="btn btn-outline-light btn-sm">Reportes</a>
+                <li><a href="{% url 'inventario_invitado' %}" class="nav-link"><i class="bi bi-card-checklist"></i> Inventario</a>
+                <li><a href="{% url 'movimientos_invitado' %}" class="nav-link"><i class="bi bi-arrows-move"></i> Movimientos</a></li>
+                <li><a href="{% url 'reportes_invitado' %}" class="nav-link"><i class="bi bi-bar-chart"></i> Reportes</a></li>
 
             {% endif %}
             </ul>

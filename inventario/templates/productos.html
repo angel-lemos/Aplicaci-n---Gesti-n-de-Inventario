@@ -19,6 +19,58 @@
     </div>
     
     {% if productos %}
+        <!-- Productos Activos -->
+        <h4 class="mb-3"><span class="badge bg-success">Productos Activos</span></h4>
+        <div class="table-responsive mb-5">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th class="text-end">Precio ($)</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-center">Mínimo</th>
+                        <th class="text-center">Unidad</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                        {% if producto.activo %}
+                            <tr>
+                                <td><strong>{{ producto.codigo }}</strong></td>
+                                <td>{{ producto.nombre_producto }}</td>
+                                <td>{{ producto.descripcion|truncatewords:5 }}</td>
+                                <td class="text-end">{{ producto.precio }}</td>
+                                <td class="text-center">
+                                    {% if producto.stock_critico_nivel %}
+                                        <span class="badge bg-danger"><i class="bi bi-exclamation-circle"></i> {{ producto.stock }}</span>
+                                    {% elif producto.stock_bajo %}
+                                        <span class="badge bg-warning text-dark">{{ producto.stock }}</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{ producto.stock }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ producto.stock_minimo }}</td>
+                                <td class="text-center">{{ producto.get_unidad_medida_display }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Productos Inactivos -->
+        <h4 class="mb-3"><span class="badge bg-secondary">Productos Inactivos</span></h4>
         <div class="table-responsive">
             <table class="table table-hover table-striped">
                 <thead class="table-dark">
@@ -29,43 +81,28 @@
                         <th class="text-end">Precio ($)</th>
                         <th class="text-center">Stock</th>
                         <th class="text-center">Mínimo</th>
-                        <th class="text-center">Estado</th>
+                        <th class="text-center">Unidad</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for producto in productos %}
-                        <tr>
-                            <td><strong>{{ producto.codigo }}</strong></td>
-                            <td>{{ producto.nombre_producto }}</td>
-                            <td>{{ producto.descripcion|truncatewords:5 }}</td>
-                            <td class="text-end">{{ producto.precio }}</td>
-                            <td class="text-center">
-                                {% if producto.stock_critico_nivel %}
-                                    <span class="badge bg-danger"><i class="bi bi-exclamation-circle"></i> {{ producto.stock }}</span>
-                                {% elif producto.stock_bajo %}
-                                    <span class="badge bg-warning text-dark">{{ producto.stock }}</span>
-                                {% else %}
-                                    <span class="badge bg-success">{{ producto.stock }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">{{ producto.stock_minimo }}</td>
-                            <td class="text-center">
-                                {% if producto.activo %}
-                                    <span class="badge bg-success">Activo</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <a href="{% url 'editar_producto' producto.id %}" class="btn btn-sm btn-warning" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-sm btn-danger" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
+                        {% if not producto.activo %}
+                            <tr class="table-light">
+                                <td><strong>{{ producto.codigo }}</strong></td>
+                                <td>{{ producto.nombre_producto }}</td>
+                                <td>{{ producto.descripcion|truncatewords:5 }}</td>
+                                <td class="text-end">{{ producto.precio }}</td>
+                                <td class="text-center">{{ producto.stock }}</td>
+                                <td class="text-center">{{ producto.stock_minimo }}</td>
+                                <td class="text-center">{{ producto.get_unidad_medida_display }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'reactivar_producto' producto.id %}" class="btn btn-sm btn-success" title="Reactivar">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>

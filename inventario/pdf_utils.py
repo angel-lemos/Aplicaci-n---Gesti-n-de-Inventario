@@ -115,15 +115,17 @@ def generar_pdf_inventario(fecha_inicio=None, fecha_fin=None, usuario=None):
     
     # Tabla de resumen
     summary_data = [
-        [
-            f"<b>Total de Productos</b><br/>{total_productos}",
-            f"<b>Total en Stock</b><br/>{total_stock} unidades",
-            f"<b>Stock Bajo (≤10)</b><br/>{productos_bajo_stock}",
-            f"<b>Stock Crítico (≤5)</b><br/>{productos_criticos}"
-        ]
+    [
+        Paragraph(f"<b>Total de Productos</b><br/>{total_productos}", styles["Normal"]),
+        Paragraph(f"<b>Total en Stock</b><br/>{total_stock} unidades", styles["Normal"]),
+        Paragraph(f"<b>Stock Bajo (≤10)</b><br/>{productos_bajo_stock}", styles["Normal"]),
+        Paragraph(f"<b>Stock Crítico (≤5)</b><br/>{productos_criticos}", styles["Normal"]),
+    ]
     ]
     
-    summary_table = Table(summary_data, colWidths=[1.5*inch]*4)
+    #summary_table = Table(summary_data, colWidths=[1.5*inch]*4)
+    summary_table = Table(summary_data, colWidths=[120,120,120,120])
+    summary_table.hAlign = 'LEFT'
     summary_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#E8F4F8')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
@@ -144,32 +146,38 @@ def generar_pdf_inventario(fecha_inicio=None, fecha_fin=None, usuario=None):
     
     # Preparar datos para la tabla
     table_data = [
-        ['ID', 'Producto', 'Precio', 'Stock', 'Stock Mín.', 'Total', 'Estado']
+        ['Código', 'Producto', 'Unidad', 'Precio Unitario', 'Stock', 'Total', 'Estado']
     ]
+    
+    total_inventario = 0
     
     for producto in productos:
         total_value = producto.stock * float(producto.precio)
+        total_inventario += total_value
         
         # Determinar estado
         if producto.stock <= 5:
-            estado = "🔴 Crítico"
+            estado = "Crítico"
         elif producto.stock <= 10:
-            estado = "🟠 Bajo"
+            estado = "Bajo"
         else:
-            estado = "🟢 OK"
+            estado = "OK"
+        
+        # Obtener el nombre de la unidad de medida
+        unidad_display = producto.get_unidad_medida_display()
         
         table_data.append([
-            str(producto.id),
-            producto.nombre_producto[:25],  # Limitar a 25 caracteres
+            producto.codigo,
+            producto.nombre_producto[:20],  # Limitar a 20 caracteres
+            unidad_display[:10],  # Limitar unidad a 10 caracteres
             f"${producto.precio:.2f}",
             str(producto.stock),
-            str(producto.stock_minimo),
             f"${total_value:.2f}",
             estado
         ])
     
     # Crear tabla
-    table = Table(table_data, colWidths=[0.4*inch, 2*inch, 0.7*inch, 0.6*inch, 0.6*inch, 0.8*inch, 1*inch])
+    table = Table(table_data, colWidths=[0.8*inch, 1.8*inch, 0.7*inch, 0.6*inch, 0.6*inch, 0.8*inch, 0.9*inch])
     table.setStyle(TableStyle([
         # Encabezado
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#003366')),
@@ -196,6 +204,18 @@ def generar_pdf_inventario(fecha_inicio=None, fecha_fin=None, usuario=None):
     ]))
     
     elements.append(table)
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Total de inventario
+    total_style = ParagraphStyle(
+        'Total',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#003366'),
+        fontName='Helvetica-Bold',
+        alignment=TA_RIGHT
+    )
+    elements.append(Paragraph(f"<b>TOTAL INVENTARIO: ${total_inventario:.2f}</b>", total_style))
     elements.append(Spacer(1, 0.3*inch))
     
     # Pie de página

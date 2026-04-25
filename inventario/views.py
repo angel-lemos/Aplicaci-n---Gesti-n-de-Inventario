@@ -449,6 +449,22 @@ def eliminar_producto(request, id):
     return render(request, 'eliminar_producto.html', contexto)
 
 
+@login_required(login_url='login')
+@administrador_required
+@require_http_methods(["GET", "POST"])
+def reactivar_producto(request, id):
+    """Reactivar producto inactivo."""
+    producto = get_object_or_404(Producto, id=id)
+    
+    if request.method == 'POST':
+        producto.activo = True
+        producto.save()
+        messages.success(request, f'Producto "{producto.nombre_producto}" reactivado exitosamente.')
+        return redirect('ver_productos')
+    
+    return render(request, 'reactivar_producto.html', {'producto': producto})
+
+
 # ==================== VISTAS PARA VENTAS ====================
 
 @login_required(login_url='login')
@@ -1242,54 +1258,6 @@ from .models import Producto
 
 @login_required
 def reporte_inventario_pdf(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte_inventario.pdf"'
-
-    p = canvas.Canvas(response, pagesize=letter)
-
-    # Título
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(200, 750, "Reporte de Inventario")
-
-    # Info general
-    p.setFont("Helvetica", 10)
-    p.drawString(50, 720, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-    p.drawString(50, 705, f"Usuario: {request.user.username}")
-
-    productos = Producto.objects.all()
-
-    # Resumen
-    total_productos = productos.count()
-    total_stock = sum(p.stock for p in productos)
-
-    p.drawString(50, 680, f"Total productos: {total_productos}")
-    p.drawString(50, 665, f"Total stock: {total_stock}")
-
-    # Tabla
-    y = 630
-    p.setFont("Helvetica-Bold", 10)
-    p.drawString(50, y, "Nombre")
-    p.drawString(200, y, "Stock")
-    p.drawString(260, y, "Precio")
-    p.drawString(330, y, "Estado")
-
-    y -= 20
-    p.setFont("Helvetica", 10)
-
-    for producto in productos:
-        estado = "Bajo stock" if producto.stock < 10 else "OK"
-
-        p.drawString(50, y, producto.nombre_producto)
-        p.drawString(200, y, str(producto.stock))
-        p.drawString(260, y, f"${producto.precio}")
-        p.drawString(330, y, estado)
-
-        y -= 20
-
-        # Nueva página si se llena
-        if y < 50:
-            p.showPage()
-            y = 750
-
-    p.save()
-    return response
+    """Generar reporte PDF de inventario."""
+    from .pdf_utils import generar_pdf_inventario
+    return generar_pdf_inventario(usuario=request.user.username)

@@ -65,12 +65,28 @@ def crear_perfil_usuario(sender, instance, created, **kwargs):
         Perfil.objects.create(user=instance)
 
 class Producto(models.Model):
+    UNIDADES_MEDIDA = [
+        ('kg', 'Kilogramos'),
+        ('g', 'Gramos'),
+        ('l', 'Litros'),
+        ('ml', 'Mililitros'),
+        ('m', 'Metros'),
+        ('cm', 'Centímetros'),
+        ('u', 'Unidad'),
+        ('docena', 'Docena'),
+        ('paquete', 'Paquete'),
+        ('lata', 'Lata'),
+        ('botella', 'Botella'),
+        ('caja', 'Caja'),
+    ]
+    
     nombre_producto = models.CharField(max_length=100)
     codigo = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     stock_minimo = models.PositiveIntegerField(default=0)
+    unidad_medida = models.CharField(max_length=20, choices=UNIDADES_MEDIDA, default='u')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
 

@@ -178,7 +178,7 @@ class UsuarioForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ['nombre_producto', 'codigo', 'descripcion', 'precio', 'stock', 'stock_minimo', 'activo']
+        fields = ['nombre_producto', 'codigo', 'descripcion', 'precio', 'stock', 'stock_minimo', 'unidad_medida', 'activo']
         widgets = {
             'nombre_producto': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del producto'}),
             'codigo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código único'}),
@@ -186,6 +186,7 @@ class ProductoForm(forms.ModelForm):
             'precio': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Precio', 'step': '0.01'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Stock actual'}),
             'stock_minimo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Stock mínimo'}),
+            'unidad_medida': forms.Select(attrs={'class': 'form-control'}),
             'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
@@ -195,6 +196,7 @@ class ProductoForm(forms.ModelForm):
             'precio': 'Precio ($)',
             'stock': 'Stock Actual',
             'stock_minimo': 'Stock Mínimo',
+            'unidad_medida': 'Unidad de Medida',
             'activo': 'Producto Activo',
         }
 
