@@ -11,7 +11,8 @@
         📦 Gestión de Inventario
     </h1>
 
-    <div class="card shadow p-4" style="width: 350px;">
+    <div class="d-flex flex-column align-items-center" style="width: 350px;">
+        <div class="card shadow p-4 w-100">
         
         <h5 class="text-center mb-4">Iniciar Sesión</h5>
 
@@ -27,7 +28,12 @@
 
                 <div class="mb-3">
                     <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-control">
+                    <div class="position-relative">
+                        <input type="password" name="password" class="form-control password-input">
+                        <button type="button" class="btn btn-link position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); z-index: 10; padding: 0.25rem 0.5rem; text-decoration: none;">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 mt-3">
@@ -35,6 +41,11 @@
                 </button>
             </div>
         </form>
+    </div>
+    
+    <button type="button" class="btn btn-sm btn-outline-info mt-3" id="btnAyuda" title="Mostrar ayuda">
+        <i class="bi bi-question-circle"></i> Ayuda
+    </button>
     </div>
 </div>
 {% endblock %}

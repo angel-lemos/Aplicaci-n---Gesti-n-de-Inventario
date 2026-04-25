@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -100,18 +101,22 @@
 <body>
     <!-- Navbar Principal -->
     <nav class="navbar navbar-dark bg-dark sticky-top">
-        <div class="container-fluid">
+        <div class="container-fluid d-flex">
             <button class="btn btn-dark toggle-sidebar-btn me-2" id="sidebarToggle" title="Abrir/Cerrar menú">
                 <i class="bi bi-list"></i>
             </button>
-            <span class="navbar-brand">
+            <span class="navbar-brand mx-auto">
                 <i class="bi bi-box-seam"></i> Gestión de Inventario
             </span>
-            <div class="dropdown">
-                <button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle"></i>
-                    {{ user.username }}
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-dark" id="btnAyuda" title="Mostrar ayuda de esta página">
+                    <i class="bi bi-question-circle"></i>
                 </button>
+                <div class="dropdown">
+                    <button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                        {{ user.username }}
+                    </button>
 
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li class="dropdown-item-text">
@@ -217,6 +222,27 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Modal Global de Ayuda -->
+    <div class="modal fade" id="ayudaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ayuda del Sistema</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- El contenido se cargará dinámicamente -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script de Ayuda Global -->
+    <script src="{% static 'js/ayuda.js' %}"></script>
+    
     <!-- Script para Sidebar Colapsible -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -250,6 +276,28 @@
                     }
                 });
             });
+        });
+    </script>
+
+    <!-- Script para Toggle de Visibilidad de Contraseña -->
+    <script>
+        document.querySelectorAll('.password-input').forEach(input => {
+            const button = input.nextElementSibling;
+            if (button) {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const icon = button.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    }
+                });
+            }
         });
     </script>
 </body>
