@@ -131,6 +131,20 @@ def puede_cambiar_contrasena_usuario(actual, objetivo):
     return False
 
 
+def puede_modificar_estado_usuario(actual, objetivo):
+    if not actual.is_authenticated or actual == objetivo:
+        return False
+    if objetivo.is_superuser:
+        return False
+    if actual.is_superuser:
+        return True
+    if hasattr(actual, 'perfil') and actual.perfil.rol == 'administrador':
+        if hasattr(objetivo, 'perfil') and objetivo.perfil.rol == 'administrador':
+            return False
+        return True
+    return False
+
+
 @login_required(login_url='login')
 @administrador_required
 @require_http_methods(["GET"])
@@ -163,15 +177,11 @@ def agregar_usuario(request):
 @require_http_methods(["GET", "POST"])
 def eliminar_usuario(request, id):
     usuario = get_object_or_404(User, id=id)
-    
-    # Verificar permisos de eliminación
-    if hasattr(usuario, 'perfil') and usuario.perfil.rol == 'administrador':
-        # Solo superusers pueden eliminar administradores
-        if not request.user.is_superuser:
-            messages.error(request, 'No tienes permisos para eliminar administradores.')
-            return redirect('ver_usuarios')
-    # Los administradores pueden eliminar empleados (y otros roles)
-    
+
+    if not puede_modificar_estado_usuario(request.user, usuario):
+        messages.error(request, 'No tienes permisos para desactivar a este usuario.')
+        return redirect('ver_usuarios')
+
     if request.method == 'POST':
         usuario.is_active = False
         usuario.save(update_fields=['is_active'])
@@ -185,13 +195,11 @@ def eliminar_usuario(request, id):
 @require_http_methods(["GET", "POST"])
 def activar_usuario(request, id):
     usuario = get_object_or_404(User, id=id)
-    
-    # Verificar permisos (similar a eliminar)
-    if hasattr(usuario, 'perfil') and usuario.perfil.rol == 'administrador':
-        if not request.user.is_superuser:
-            messages.error(request, 'No tienes permisos para activar administradores.')
-            return redirect('ver_usuarios')
-    
+
+    if not puede_modificar_estado_usuario(request.user, usuario):
+        messages.error(request, 'No tienes permisos para activar a este usuario.')
+        return redirect('ver_usuarios')
+
     if request.method == 'POST':
         usuario.is_active = True
         usuario.save(update_fields=['is_active'])
@@ -229,7 +237,7 @@ def cambiar_contrasena_usuario(request, id):
 @require_http_methods(["GET"])
 def ver_clientes(request):
     """Ver todos los clientes."""
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.order_by('-activo', 'nombre')
     contexto = {'clientes': clientes}
     return render(request, 'clientes.html', contexto)
 
@@ -273,11 +281,39 @@ def editar_cliente(request, id):
 def eliminar_cliente(request, id):
     """Eliminar cliente."""
     cliente = get_object_or_404(Cliente, id=id)
+    tiene_transacciones = cliente.ventas.exists()
+
     if request.method == 'POST':
-        cliente.delete()
-        messages.success(request, 'Cliente eliminado exitosamente.')
+        if tiene_transacciones:
+            cliente.activo = False
+            cliente.save()
+            messages.success(request, f'Cliente "{cliente.nombre}" dado de baja para conservar el historial de ventas.')
+        else:
+            cliente.delete()
+            messages.success(request, 'Cliente eliminado exitosamente.')
         return redirect('ver_clientes')
-    return render(request, 'eliminar_cliente.html', {'cliente': cliente})
+
+    return render(request, 'eliminar_cliente.html', {
+        'cliente': cliente,
+        'tiene_transacciones': tiene_transacciones,
+        'accion': 'Baja Lógica' if tiene_transacciones else 'Eliminación'
+    })
+
+
+@login_required(login_url='login')
+@administrador_required
+@require_http_methods(["GET", "POST"])
+def reactivar_cliente(request, id):
+    """Reactivar cliente inactivo."""
+    cliente = get_object_or_404(Cliente, id=id)
+
+    if request.method == 'POST':
+        cliente.activo = True
+        cliente.save()
+        messages.success(request, f'Cliente "{cliente.nombre}" reactivado exitosamente.')
+        return redirect('ver_clientes')
+
+    return render(request, 'reactivar_cliente.html', {'cliente': cliente})
 
 
 # ==================== VISTAS PARA PROVEEDORES ====================
@@ -286,7 +322,7 @@ def eliminar_cliente(request, id):
 @require_http_methods(["GET"])
 def ver_proveedores(request):
     """Ver todos los proveedores."""
-    proveedores = Proveedor.objects.all()
+    proveedores = Proveedor.objects.order_by('-activo', 'nombre_proveedor')
     contexto = {'proveedores': proveedores}
     return render(request, 'proveedores.html', contexto)
 
@@ -330,11 +366,39 @@ def editar_proveedor(request, id):
 def eliminar_proveedor(request, id):
     """Eliminar proveedor."""
     proveedor = get_object_or_404(Proveedor, id=id)
+    tiene_transacciones = proveedor.compras.exists()
+
     if request.method == 'POST':
-        proveedor.delete()
-        messages.success(request, 'Proveedor eliminado exitosamente.')
+        if tiene_transacciones:
+            proveedor.activo = False
+            proveedor.save()
+            messages.success(request, f'Proveedor "{proveedor.nombre_proveedor}" dado de baja para conservar el historial de compras.')
+        else:
+            proveedor.delete()
+            messages.success(request, 'Proveedor eliminado exitosamente.')
         return redirect('ver_proveedores')
-    return render(request, 'eliminar_proveedor.html', {'proveedor': proveedor})
+
+    return render(request, 'eliminar_proveedor.html', {
+        'proveedor': proveedor,
+        'tiene_transacciones': tiene_transacciones,
+        'accion': 'Baja Lógica' if tiene_transacciones else 'Eliminación'
+    })
+
+
+@login_required(login_url='login')
+@administrador_required
+@require_http_methods(["GET", "POST"])
+def reactivar_proveedor(request, id):
+    """Reactivar proveedor inactivo."""
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    if request.method == 'POST':
+        proveedor.activo = True
+        proveedor.save()
+        messages.success(request, f'Proveedor "{proveedor.nombre_proveedor}" reactivado exitosamente.')
+        return redirect('ver_proveedores')
+
+    return render(request, 'reactivar_proveedor.html', {'proveedor': proveedor})
 
 
 # ==================== VISTAS PARA PRODUCTOS ====================
@@ -876,9 +940,9 @@ def productos_empleado(request):
 @solo_empleado
 @require_http_methods(["GET"])
 def clientes_empleado(request):
-    """Vista para empleados: ver todos los clientes (sin editar ni eliminar)."""
+    """Vista para empleados: ver todos los clientes activos (sin editar ni eliminar)."""
     query = request.GET.get('q', '').strip()
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.filter(activo=True)
     if query:
         clientes = clientes.filter(
             Q(nombre__icontains=query) |
@@ -892,9 +956,9 @@ def clientes_empleado(request):
 @solo_empleado
 @require_http_methods(["GET"])
 def proveedores_empleado(request):
-    """Vista para empleados: ver todos los proveedores (sin editar ni eliminar)."""
+    """Vista para empleados: ver todos los proveedores activos (sin editar ni eliminar)."""
     query = request.GET.get('q', '').strip()
-    proveedores = Proveedor.objects.all()
+    proveedores = Proveedor.objects.filter(activo=True)
     if query:
         proveedores = proveedores.filter(
             Q(nombre_proveedor__icontains=query) |

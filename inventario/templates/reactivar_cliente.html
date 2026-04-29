@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Reactivar Cliente - Gestión de Inventario{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-arrow-counterclockwise"></i> Reactivar Cliente</h4>
+                </div>
+                <div class="card-body">
+                    <p>¿Seguro que desea reactivar al cliente <strong>{{ cliente.nombre }}</strong>?</p>
+                    <div class="alert alert-info">
+                        <p><strong>Correo:</strong> {{ cliente.email }}</p>
+                        <p><strong>Estado actual:</strong> <span class="badge bg-secondary">Inactivo</span></p>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Confirmar reactivación</button>
+                        <a href="{% url 'ver_clientes' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

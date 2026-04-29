@@ -11,9 +11,10 @@ class Proveedor(models.Model):
     email = models.EmailField(unique=True)
     direccion = models.CharField(max_length=200)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['nombre_proveedor']
+        ordering = ['-activo', 'nombre_proveedor']
         verbose_name = 'Proveedor'
         verbose_name_plural = 'Proveedores'
 
@@ -26,9 +27,10 @@ class Cliente(models.Model):
     email = models.EmailField(unique=True)
     direccion = models.CharField(max_length=200)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['nombre']
+        ordering = ['-activo', 'nombre']
         verbose_name = 'Cliente'
         verbose_name_plural = 'Clientes'
 

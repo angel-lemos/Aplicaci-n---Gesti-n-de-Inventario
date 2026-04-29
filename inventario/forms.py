@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from .models import Venta, Producto, Compra, Cliente, Proveedor, DetalleVenta, DetalleCompra, Perfil
 
@@ -50,36 +51,40 @@ class AdminPasswordChangeForm(SetPasswordForm):
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['nombre', 'telefono', 'email', 'direccion']
+        fields = ['nombre', 'telefono', 'email', 'direccion', 'activo']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del cliente'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'nombre': 'Nombre',
             'telefono': 'Teléfono',
             'email': 'Correo Electrónico',
             'direccion': 'Dirección',
+            'activo': 'Cliente activo',
         }
 
 # ====================== FORMULARIOS PARA PROVEEDORES ======================
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
-        fields = ['nombre_proveedor', 'telefono', 'email', 'direccion']
+        fields = ['nombre_proveedor', 'telefono', 'email', 'direccion', 'activo']
         widgets = {
             'nombre_proveedor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del proveedor'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'nombre_proveedor': 'Nombre',
             'telefono': 'Teléfono',
             'email': 'Correo Electrónico',
             'direccion': 'Dirección',
+            'activo': 'Proveedor activo',
         }
 
 # ====================== FORMULARIOS PARA USUARIOS ======================
@@ -214,6 +219,13 @@ class VentaForm(forms.ModelForm):
             'estado': 'Estado',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['cliente'].queryset = Cliente.objects.filter(Q(activo=True) | Q(pk=self.instance.cliente_id))
+        else:
+            self.fields['cliente'].queryset = Cliente.objects.filter(activo=True)
+
 class DetalleVentaForm(forms.ModelForm):
     class Meta:
         model = DetalleVenta
@@ -235,6 +247,10 @@ class DetalleVentaForm(forms.ModelForm):
         self.fields['producto'].required = False
         self.fields['cantidad'].required = False
         self.fields['precio_venta'].required = False
+        if self.instance and self.instance.pk:
+            self.fields['producto'].queryset = Producto.objects.filter(Q(activo=True) | Q(pk=self.instance.producto_id))
+        else:
+            self.fields['producto'].queryset = Producto.objects.filter(activo=True)
     
     def clean(self):
         cleaned_data = super().clean()
@@ -275,6 +291,13 @@ class CompraForm(forms.ModelForm):
             'estado': 'Estado',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['proveedor'].queryset = Proveedor.objects.filter(Q(activo=True) | Q(pk=self.instance.proveedor_id))
+        else:
+            self.fields['proveedor'].queryset = Proveedor.objects.filter(activo=True)
+
 class DetalleCompraForm(forms.ModelForm):
     class Meta:
         model = DetalleCompra
@@ -296,6 +319,10 @@ class DetalleCompraForm(forms.ModelForm):
         self.fields['producto'].required = False
         self.fields['cantidad'].required = False
         self.fields['precio_compra'].required = False
+        if self.instance and self.instance.pk:
+            self.fields['producto'].queryset = Producto.objects.filter(Q(activo=True) | Q(pk=self.instance.producto_id))
+        else:
+            self.fields['producto'].queryset = Producto.objects.filter(activo=True)
     
     def clean(self):
         cleaned_data = super().clean()

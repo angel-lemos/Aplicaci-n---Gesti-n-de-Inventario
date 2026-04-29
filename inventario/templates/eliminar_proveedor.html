@@ -12,8 +12,14 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-warning mb-4">
-                        <strong>¿Está seguro de que desea eliminar este proveedor?</strong>
-                        <p class="mb-0 mt-2">Esta acción no se puede deshacer.</p>
+                        <strong>{{ accion }} Proveedor</strong>
+                        <p class="mb-0 mt-2">
+                            {% if tiene_transacciones %}
+                                Este proveedor tiene compras registradas. Se marcará como inactivo pero conservará el historial.
+                            {% else %}
+                                Esta acción no se puede deshacer.
+                            {% endif %}
+                        </p>
                     </div>
 
                     <div class="card bg-light">
@@ -22,6 +28,7 @@
                             <p><strong>Correo:</strong> {{ proveedor.email }}</p>
                             <p><strong>Teléfono:</strong> {{ proveedor.telefono }}</p>
                             <p><strong>Dirección:</strong> {{ proveedor.direccion }}</p>
+                            <p><strong>Estado actual:</strong> <span class="badge {% if proveedor.activo %}bg-success{% else %}bg-secondary{% endif %}">{% if proveedor.activo %}Activo{% else %}Inactivo{% endif %}</span></p>
                             <p class="mb-0"><strong>Registrado:</strong> {{ proveedor.fecha_creacion|date:"d/m/Y H:i" }}</p>
                         </div>
                     </div>
@@ -32,8 +39,8 @@
                             <a href="{% url 'ver_proveedores' %}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-trash"></i> Eliminar
+                            <button type="submit" class="btn {% if tiene_transacciones %}btn-warning{% else %}btn-danger{% endif %}">
+                                <i class="bi bi-trash"></i> {{ accion }}
                             </button>
                         </div>
                     </form>

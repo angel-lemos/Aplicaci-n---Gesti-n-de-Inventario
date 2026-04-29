@@ -14,6 +14,7 @@ urlpatterns = [
     path('clientes/agregar/', views.agregar_cliente, name='agregar_cliente'),
     path('clientes/editar/<int:id>/', views.editar_cliente, name='editar_cliente'),
     path('clientes/eliminar/<int:id>/', views.eliminar_cliente, name='eliminar_cliente'),
+    path('clientes/reactivar/<int:id>/', views.reactivar_cliente, name='reactivar_cliente'),
     
     # USUARIOS
     path('usuarios/', views.ver_usuarios, name='ver_usuarios'),
@@ -27,6 +28,7 @@ urlpatterns = [
     path('proveedores/agregar/', views.agregar_proveedor, name='agregar_proveedor'),
     path('proveedores/editar/<int:id>/', views.editar_proveedor, name='editar_proveedor'),
     path('proveedores/eliminar/<int:id>/', views.eliminar_proveedor, name='eliminar_proveedor'),
+    path('proveedores/reactivar/<int:id>/', views.reactivar_proveedor, name='reactivar_proveedor'),
     
     # PRODUCTOS
     path('productos/', views.ver_productos, name='ver_productos'),

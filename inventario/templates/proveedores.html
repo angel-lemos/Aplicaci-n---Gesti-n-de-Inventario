@@ -28,6 +28,7 @@
                         <th>Teléfono</th>
                         <th>Dirección</th>
                         <th>Fecha Creación</th>
+                        <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -39,13 +40,24 @@
                             <td>{{ proveedor.telefono }}</td>
                             <td>{{ proveedor.direccion }}</td>
                             <td>{{ proveedor.fecha_creacion|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge {% if proveedor.activo %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if proveedor.activo %}Activo{% else %}Inactivo{% endif %}
+                                </span>
+                            </td>
                             <td class="text-center">
                                 <a href="{% url 'editar_proveedor' proveedor.id %}" class="btn btn-sm btn-warning" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="{% url 'eliminar_proveedor' proveedor.id %}" class="btn btn-sm btn-danger" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                {% if proveedor.activo %}
+                                    <a href="{% url 'eliminar_proveedor' proveedor.id %}" class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'reactivar_proveedor' proveedor.id %}" class="btn btn-sm btn-success" title="Reactivar">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </a>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
