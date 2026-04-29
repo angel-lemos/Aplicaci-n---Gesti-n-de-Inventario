@@ -282,7 +282,8 @@
     <!-- Script para Toggle de Visibilidad de Contraseña -->
     <script>
         document.querySelectorAll('.password-input').forEach(input => {
-            const button = input.nextElementSibling;
+            const container = input.parentElement;
+            const button = container.querySelector('button[type="button"]');
             if (button) {
                 button.addEventListener('click', (e) => {
                     e.preventDefault();
